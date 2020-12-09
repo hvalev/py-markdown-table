@@ -46,7 +46,7 @@ and consequently import it via
 |Vrij zwemmen| 7:30-8:30 |Fri 11.12|18/18|
 +------------+-----------+---------+-----+
 |Vrij Zwemmen|13:15-14:15|Sat 12.12|18/18|
-+------------+-----------+---------+-----+
++----------------------------------------+
 ```
 
 ```markdownTable(data, row_sep = 'topbottom').getMarkdown()```
@@ -57,7 +57,7 @@ and consequently import it via
 |Vrij Zwemmen|12:00-13:00|Thu 10.12|18/18|
 |Vrij zwemmen| 7:30-8:30 |Fri 11.12|18/18|
 |Vrij Zwemmen|13:15-14:15|Sat 12.12|18/18|
-+------------+-----------+---------+-----+
++----------------------------------------+
 ```
 
 ```markdownTable(data, row_sep = 'topbottom', padding_width = 5, padding_weight='left').getMarkdown()```
@@ -68,7 +68,7 @@ and consequently import it via
 |     Vrij Zwemmen|     12:00-13:00|     Thu 10.12|     18/18|
 |     Vrij zwemmen|       7:30-8:30|     Fri 11.12|     18/18|
 |     Vrij Zwemmen|     13:15-14:15|     Sat 12.12|     18/18|
-+-----------------+----------------+--------------+----------+
++------------------------------------------------------------+
 ```
 
 ```markdownTable(data, row_sep = 'topbottom', padding_width = 5, padding_weight='centerright').getMarkdown()```
@@ -79,7 +79,7 @@ and consequently import it via
 |  Vrij Zwemmen   |  12:00-13:00   |  Thu 10.12   |  18/18   |
 |  Vrij zwemmen   |   7:30-8:30    |  Fri 11.12   |  18/18   |
 |  Vrij Zwemmen   |  13:15-14:15   |  Sat 12.12   |  18/18   |
-+-----------------+----------------+--------------+----------+
++------------------------------------------------------------+
 ```
 
 ```markdownTable(data, row_sep = 'always', padding_width = 5, padding_weight='centerright', padding_char = '.').getMarkdown()```
@@ -94,5 +94,5 @@ and consequently import it via
 |..Vrij zwemmen...|...7:30-8:30....|..Fri 11.12...|..18/18...|
 +-----------------+----------------+--------------+----------+
 |..Vrij Zwemmen...|..13:15-14:15...|..Sat 12.12...|..18/18...|
-+-----------------+----------------+--------------+----------+
++------------------------------------------------------------+
 ```

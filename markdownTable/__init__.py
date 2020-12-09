@@ -132,7 +132,7 @@ class markdownTable():
             if self.row_sep == 'always' and ix < len(self.data)-1:                
                 rows = rows + self.row_sep_str + self.newline_char
             if (self.row_sep == 'always' or self.row_sep == 'topbottom') and ix == len(self.data)-1:
-                rows = rows + self.newline_char + self.row_sep_str
+                rows = rows + self.newline_char + self.row_sep_str_last
         return rows
     
     
