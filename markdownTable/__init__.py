@@ -62,7 +62,7 @@ class markdownTable():
     def getPadding(self):
         padding = dict()
         for item in self.order:
-            padding[item] = 0
+            padding[item] = len(item)
         for item in self.data:
             for key, value in item.items():
                 if (padding[key]-self.padding_width) < len(str(item[key])):
