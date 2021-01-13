@@ -5,14 +5,20 @@ on:
     - 'README.md'
     tags:
       - '*'
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "Testing pipeline"
+        required: true
+        default: "test.yml"
+  
 
 jobs:
   build-n-publish:
     name: Publish Python distribution
     runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+    with:
+      python-version: 3.9
     steps:
       - uses: actions/checkout@master
       - name: Setup Python 3.6
