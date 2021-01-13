@@ -1,4 +1,8 @@
 # markdownTable
+
+![build](https://github.com/hvalev/markdownTable/workflows/build/badge.svg)
+
+
 A class used to generate padded tables in a markdown code block 
     
     Args:
@@ -34,7 +38,7 @@ and consequently import it via
 
 # Examples
 
-```markdownTable(data, row_sep = 'always').getMarkdown()```
+```markdownTable(data).getMarkdown(row_sep = 'always')```
 ```
 +----------------------------------------+
 |    title   |    time   |   date  |seats|
@@ -49,7 +53,7 @@ and consequently import it via
 +----------------------------------------+
 ```
 
-```markdownTable(data, row_sep = 'topbottom').getMarkdown()```
+```markdownTable(data).setParams(row_sep = 'topbottom').getMarkdown()```
 ```
 +----------------------------------------+
 |    title   |    time   |   date  |seats|
@@ -60,7 +64,7 @@ and consequently import it via
 +----------------------------------------+
 ```
 
-```markdownTable(data, row_sep = 'topbottom', padding_width = 5, padding_weight='left').getMarkdown()```
+```markdownTable(data).setParams(row_sep = 'topbottom', padding_width = 5, padding_weight='left').getMarkdown()```
 ```
 +------------------------------------------------------------+
 |            title|            time|          date|     seats|
@@ -71,7 +75,7 @@ and consequently import it via
 +------------------------------------------------------------+
 ```
 
-```markdownTable(data, row_sep = 'topbottom', padding_width = 5, padding_weight='centerright').getMarkdown()```
+```markdownTable(data).setParams(row_sep = 'topbottom', padding_width = 5, padding_weight = 'centerright').getMarkdown()```
 ```
 +------------------------------------------------------------+
 |      title      |      time      |     date     |  seats   |
@@ -82,7 +86,7 @@ and consequently import it via
 +------------------------------------------------------------+
 ```
 
-```markdownTable(data, row_sep = 'always', padding_width = 5, padding_weight='centerright', padding_char = '.').getMarkdown()```
+```mt = markdownTable(data).setParams(row_sep = 'always', padding_width = 5, padding_weight='centerright', padding_char = '.').getMarkdown()```
 ```
 +------------------------------------------------------------+
 |......title......|......time......|.....date.....|..seats...|
