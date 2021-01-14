@@ -29,3 +29,13 @@ jobs:
           pip install pytest
           pip install pytest-cov
           pytest ./tests/tests.py --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+      - name: "Upload coverage to Codecov"
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOVTOKEN }} # not required for public repos
+#          files: ./coverage1.xml,./coverage2.xml # optional
+#          flags: unittests # optional
+#          name: codecov-umbrella # optional
+#          fail_ci_if_error: true # optional (default = false)
+#          verbose: true # optional (default = false)
+          fail_ci_if_error: true

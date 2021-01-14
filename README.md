@@ -1,6 +1,8 @@
 # markdownTable
 
-![build](https://github.com/hvalev/markdownTable/workflows/test/badge.svg)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/hvalev/markdownTable/test?label=test)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/hvalev/markdownTable/deploy?label=deploy)
+
 
 A class used to generate padded tables in a markdown code block 
 
