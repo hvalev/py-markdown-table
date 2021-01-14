@@ -14,7 +14,7 @@ and consequently import it via
 
 # Examples
 
-```markdownTable(data).getMarkdown(row_sep = 'always')```
+```markdownTable(data)..setParams(row_sep = 'always').getMarkdown()```
 ```
 +----------------------------------------+
 |    title   |    time   |   date  |seats|
