@@ -33,8 +33,8 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOVTOKEN }} # not required for public repos
-          files: ./tests/coverage1.xml,./coverage2.xml # optional
-          flags: unittests # optional
+#          files: ./tests/coverage1.xml,./coverage2.xml # optional
+#          flags: unittests # optional
 #          name: codecov-umbrella # optional
 #          fail_ci_if_error: true # optional (default = false)
 #          verbose: true # optional (default = false)
