@@ -4,17 +4,42 @@
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/hvalev/markdownTable/deploy?label=deploy)
 [![codecov](https://codecov.io/gh/hvalev/markdownTable/branch/main/graph/badge.svg?token=ZZ8WXO4H6P)](https://codecov.io/gh/hvalev/markdownTable)
 
-A class used to generate padded tables in a markdown code block 
+A class used to generate padded tables in a markdown code block. It also works with pandas dataframes.
 
 # Installation
-You can install it via pip with the following command 
-```pip3 install py-markdown-table```
-and consequently import it via
+using pip:
+```pip install py-markdown-table```
+importing:
 ```from markdownTable import markdownTable```
 
-# Examples
+# Parameters
+The library supports has the following parameters:
+```
+row_sep = 'always'                  -> strategy for row separation
+padding_width = 0                   -> additional character width to pad table cells with
+padding_weight = 'centerleft'       -> strategy for allocating extra padding in cells
+padding_char = ' '                  -> filler character for padding
+newline_char = '\n'                 -> newline character to use
+float_rounding = 2                  -> round to decimal point for float values
+```
 
-```markdownTable(data).getMarkdown(row_sep = 'always')```
+Parameters can be set with the setParams() function:
+markdownTable(t).setParams(float_rounding = 2, padding_char = '.')
+
+# Examples with DataFrames
+
+```
+import pandas as pd
+from markdownTable import markdownTable
+
+file = 'sample.csv'
+df = pd.read_csv(file)
+markdownTable(df.to_dict(orient='records')).getMarkdown()
+```
+
+# Examples Plain
+
+```markdownTable(data).setParams(row_sep = 'always').getMarkdown()```
 ```
 +----------------------------------------+
 |    title   |    time   |   date  |seats|

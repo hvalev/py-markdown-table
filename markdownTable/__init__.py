@@ -23,6 +23,7 @@ class markdownTable():
                    'centerright' centers items with the extra padding allocated to the end of the cell
     padding_char (str): Custom character to fill extra and normal padding with. Default is a blank space.
     newline_char (str): Custom character to be used for indicating a newline
+    float_rounding (int): decimal place to round float values to. Default is 2, but can also be set to 'None' to show complete values
 
     Methods
     -------
@@ -42,15 +43,24 @@ class markdownTable():
         self.padding_weight = 'centerleft'
         self.padding_char = ' '
         self.newline_char = '\n'
+        self.float_rounding = 2
+        self.updateMetaParams()
         return
 
-    def setParams(self, row_sep='always', padding_width=0, padding_weight='centerleft', padding_char=' ', newline_char='\n'):
+    def setParams(self, row_sep='always', padding_width=0, padding_weight='centerleft', padding_char=' ', newline_char='\n', float_rounding=2):
         self.row_sep = row_sep
         self.padding_width = padding_width
         self.padding_weight = padding_weight
         self.padding_char = padding_char
         self.newline_char = newline_char
+        self.float_rounding = float_rounding
+        self.updateMetaParams()
         return self
+
+    def updateMetaParams(self):
+        self.var_padding = self.getPadding()
+        self.var_row_sep = self.getRowSepStr()
+        self.var_row_sep_last = self.getRowSepLast()
 
     def validate(self):
         if len(self.data) < 1:
@@ -67,36 +77,37 @@ class markdownTable():
             padding[item] = len(item)
         for item in self.data:
             for key in item.keys():
+                if(type(item[key]) is float and self.float_rounding):
+                    item[key] = round(item[key], self.float_rounding)
                 if (padding[key]-self.padding_width) < len(str(item[key])):
                     padding[key] = len(str(item[key]))+self.padding_width
         return padding
 
     def getRowSepStr(self):
         row_sep_str = ''
-        for value in self.getPadding().values():
-            row_sep_str = row_sep_str + '+' + '-'*value
-        row_sep_str = row_sep_str + '+'
+        for value in self.var_padding.values():
+            row_sep_str += '+' + '-'*value
+        row_sep_str += '+'
         return row_sep_str
 
     def getRowSepLast(self):
         row_sep_str_last = '+'
-        for value in self.getPadding().values():
-            row_sep_str_last = row_sep_str_last + '-'*(value+1)
+        for value in self.var_padding.values():
+            row_sep_str_last += '-'*(value+1)
         row_sep_str_last = row_sep_str_last[:-1] + '+'
         return row_sep_str_last
 
     def getMargin(self, margin):
         if self.padding_weight == 'left':
-            left = margin
+            right = 0
         elif self.padding_weight == 'right':
-            left = 0
+            right = margin
         elif self.padding_weight == 'centerleft':
-            left = math.ceil(margin/2)
+            right = math.floor(margin/2)
         elif self.padding_weight == 'centerright':
-            left = math.floor(margin/2)
+            right = math.ceil(margin/2)
         else:
-            left = math.ceil(margin/2)
-        right = margin - left
+            right = math.floor(margin/2)
         return right
 
     def getMarkdown(self):
@@ -105,28 +116,28 @@ class markdownTable():
     def getHeader(self):
         header = ''
         if self.row_sep == 'topbottom' or 'always':
-            header = header + self.newline_char + self.getRowSepLast() + self.newline_char
+            header += self.newline_char + self.var_row_sep_last + self.newline_char
         for key in self.data[0].keys():
-            margin = self.getPadding()[key]-len(key)
+            margin = self.var_padding[key]-len(key)
             right = self.getMargin(margin)
-            header += '|' + key.rjust(self.getPadding()[key]-right, self.padding_char).ljust(self.getPadding()[key], self.padding_char)
-        header = header + '|' + self.newline_char
+            header += '|' + key.rjust(self.var_padding[key]-right, self.padding_char).ljust(self.var_padding[key], self.padding_char)
+        header += '|' + self.newline_char
         if self.row_sep == 'always':
-            header = header + self.getRowSepStr() + self.newline_char
+            header += self.var_row_sep + self.newline_char
         return header
 
     def getBody(self):
         rows = ''
         for ix, item in enumerate(self.data):
             for key in self.data[0].keys():
-                margin = self.getPadding()[key]-len(str(item[key]))
+                margin = self.var_padding[key]-len(str(item[key]))
                 right = self.getMargin(margin)
-                rows += '|' + str(item[key]).rjust(self.getPadding()[key]-right, self.padding_char).ljust(self.getPadding()[key], self.padding_char)
+                rows += '|' + str(item[key]).rjust(self.var_padding[key]-right, self.padding_char).ljust(self.var_padding[key], self.padding_char)
             rows += '|'
             if(ix < len(self.data)-1):
-                rows = rows + self.newline_char
+                rows += self.newline_char
             if self.row_sep == 'always' and ix < len(self.data)-1:
-                rows = rows + self.getRowSepStr() + self.newline_char
+                rows += self.var_row_sep + self.newline_char
             if (self.row_sep == 'always' or self.row_sep == 'topbottom') and ix == len(self.data)-1:
-                rows = rows + self.newline_char + self.getRowSepLast()
+                rows += self.newline_char + self.var_row_sep_last
         return rows
