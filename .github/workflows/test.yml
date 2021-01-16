@@ -1,6 +1,8 @@
 name: test and publish
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
     paths-ignore:
