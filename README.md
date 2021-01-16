@@ -1,7 +1,5 @@
 # markdownTable
-
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/hvalev/markdownTable/test?label=test)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/hvalev/markdownTable/deploy?label=deploy)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/hvalev/markdownTable/test'n'publish)
 [![codecov](https://codecov.io/gh/hvalev/markdownTable/branch/main/graph/badge.svg?token=ZZ8WXO4H6P)](https://codecov.io/gh/hvalev/markdownTable)
 [![HitCount](http://hits.dwyl.com/hvalev/markdownTable.svg)](http://hits.dwyl.com/hvalev/markdownTable)
 
@@ -13,19 +11,32 @@ using pip:
 importing:
 ```from markdownTable import markdownTable```
 
+# Usage
+```markdownTable(data).getMarkdown()```
+or
+```markdownTable(data).setParams(...).getMarkdown()```
+
 # Parameters
 The library supports has the following parameters:
 ```
-row_sep = 'always'                  -> strategy for row separation
-padding_width = 0                   -> additional character width to pad table cells with
-padding_weight = 'centerleft'       -> strategy for allocating extra padding in cells
-padding_char = ' '                  -> filler character for padding
-newline_char = '\n'                 -> newline character to use
-float_rounding = 2                  -> round to decimal point for float values
+markdownTable(data):
+    data (list): List of dicts with uniform {key : value} pairs used to generate the header
+markdownTable(data).setParams(...):
+    row_sep (str): Row separation strategy with the following options:
+            'always'        Separate each row
+            'topbottom'     Insert row separator above header and below the last row
+            'None'          No row separation
+    padding_width (int):    Extra padding to all table cells
+    padding_weight (str):   Padding strategy. The following values are accepted:
+            'left'          Aligns items to the end of the cell
+            'right'         Aligns items to the beginning of the cell
+            'centerleft'    Centers items, where extra padding is allocated to the beginning of the cell
+            'centerright'   Centers items, where extra padding is allocated to the end of the cell
+    padding_char (str):     Custom single character to fill extra and normal padding with. Default is a blank space.
+    newline_char (str):     Custom character to be used for indicating a newline. Default is '\n'
+    float_rounding (int):   Round down float values to a number decimal places.
+                            Default is 2, but can also be set to 'None' to not round down.
 ```
-
-Parameters can be set with the setParams() function:
-markdownTable(t).setParams(float_rounding = 2, padding_char = '.')
 
 # Examples with DataFrames
 
