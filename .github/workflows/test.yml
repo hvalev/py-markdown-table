@@ -44,6 +44,7 @@ jobs:
   build:
     name: Publish Python distribution
     runs-on: ubuntu-18.04
+    needs: test
     steps:
       - uses: actions/checkout@master
       - name: Setup Python 3.9
@@ -54,7 +55,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
       - name: Install pypa/build
-        needs: test
         run: >-
           python -m
           pip install
