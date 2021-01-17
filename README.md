@@ -5,18 +5,18 @@
 
 A class used to generate padded tables in a markdown code block. It also works with pandas dataframes.
 
-# Installation
+## Installation
 using pip:
 ```pip install py-markdown-table```
 importing:
 ```from markdownTable import markdownTable```
 
-# Usage
+## Usage
 ```markdownTable(data).getMarkdown()```
 or
 ```markdownTable(data).setParams(...).getMarkdown()```
 
-# Parameters
+## Parameters
 The library supports has the following parameters:
 ```
 markdownTable(data):
@@ -38,7 +38,7 @@ markdownTable(data).setParams(...):
                             Default is 2, but can also be set to 'None' to not round down.
 ```
 
-# Examples with DataFrames
+## Using it with a dataframe
 
 ```
 import pandas as pd
@@ -49,7 +49,7 @@ df = pd.read_csv(file)
 markdownTable(df.to_dict(orient='records')).getMarkdown()
 ```
 
-# Examples Plain
+## Examples
 
 ```markdownTable(data).setParams(row_sep = 'always').getMarkdown()```
 ```
