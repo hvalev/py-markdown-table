@@ -1,7 +1,9 @@
 # markdownTable
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/hvalev/markdownTable/test'n'publish)
 [![codecov](https://codecov.io/gh/hvalev/markdownTable/branch/main/graph/badge.svg?token=ZZ8WXO4H6P)](https://codecov.io/gh/hvalev/markdownTable)
-[![HitCount](http://hits.dwyl.com/hvalev/markdownTable.svg)](http://hits.dwyl.com/hvalev/markdownTable)
+[![Downloads](https://pepy.tech/badge/py-markdown-table)](https://pepy.tech/project/py-markdown-table)
+[![Downloads](https://pepy.tech/badge/py-markdown-table/month)](https://pepy.tech/project/py-markdown-table)
+[![Downloads](https://pepy.tech/badge/py-markdown-table/week)](https://pepy.tech/project/py-markdown-table)
 
 A class used to generate padded tables in a markdown code block. It also works with pandas dataframes.
 
