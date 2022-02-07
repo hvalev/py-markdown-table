@@ -115,7 +115,7 @@ class markdownTable():
 
     def getHeader(self):
         header = ''
-        if self.row_sep == 'topbottom' or 'always':
+        if self.row_sep in ('topbottom', 'always'):
             header += self.newline_char + self.var_row_sep_last + self.newline_char
         for key in self.data[0].keys():
             margin = self.var_padding[key]-len(key)
@@ -124,6 +124,8 @@ class markdownTable():
         header += '|' + self.newline_char
         if self.row_sep == 'always':
             header += self.var_row_sep + self.newline_char
+        if self.row_sep == 'markdown':
+            header += self.var_row_sep.replace('+', '|') + self.newline_char
         return header
 
     def getBody(self):
