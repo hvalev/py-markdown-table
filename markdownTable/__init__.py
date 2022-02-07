@@ -44,16 +44,18 @@ class markdownTable():
         self.padding_char = ' '
         self.newline_char = '\n'
         self.float_rounding = 2
+        self.quote = True
         self.updateMetaParams()
         return
 
-    def setParams(self, row_sep='always', padding_width=0, padding_weight='centerleft', padding_char=' ', newline_char='\n', float_rounding=2):
+    def setParams(self, row_sep='always', padding_width=0, padding_weight='centerleft', padding_char=' ', newline_char='\n', float_rounding=2, quote=True):
         self.row_sep = row_sep
         self.padding_width = padding_width
         self.padding_weight = padding_weight
         self.padding_char = padding_char
         self.newline_char = newline_char
         self.float_rounding = float_rounding
+        self.quote = quote
         self.updateMetaParams()
         return self
 
@@ -111,7 +113,11 @@ class markdownTable():
         return right
 
     def getMarkdown(self):
-        return '```'+self.getHeader()+self.getBody()+'```'
+        data = self.getHeader()+self.getBody()
+        if self.quote:
+            return '```'+data+'```'
+        else:
+            return data
 
     def getHeader(self):
         header = ''
