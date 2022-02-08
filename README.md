@@ -27,6 +27,7 @@ markdownTable(data).setParams(...):
     row_sep (str): Row separation strategy with the following options:
             'always'        Separate each row
             'topbottom'     Insert row separator above header and below the last row
+            'markdown'      Single header/body separator formated as valid markdown
             'None'          No row separation
     padding_width (int):    Extra padding to all table cells
     padding_weight (str):   Padding strategy. The following values are accepted:
@@ -38,6 +39,7 @@ markdownTable(data).setParams(...):
     newline_char (str):     Custom character to be used for indicating a newline. Default is '\n'
     float_rounding (int):   Round down float values to a number decimal places.
                             Default is 2, but can also be set to 'None' to not round down.
+    quote(bool):            If true (default) surrounds the table with markdown block code quote
 ```
 
 ## Using it with a dataframe
@@ -78,6 +80,26 @@ markdownTable(df.to_dict(orient='records')).getMarkdown()
 |Vrij Zwemmen|13:15-14:15|Sat 12.12|18/18|
 +----------------------------------------+
 ```
+
+```markdownTable(data).setParams(row_sep = 'markdown').getMarkdown()```
+```
+|    title   |    time   |   date  |seats|
+|------------|-----------|---------|-----|
+|Vrij Zwemmen|21:30-23:00|Wed 09.12|24/24|
+|Vrij Zwemmen|12:00-13:00|Thu 10.12|18/18|
+|Vrij zwemmen| 7:30-8:30 |Fri 11.12|18/18|
+|Vrij Zwemmen|13:15-14:15|Sat 12.12|18/18|
+```
+
+```markdownTable(data).setParams(row_sep = 'markdown', quote = False).getMarkdown()```
+
+|    title   |    time   |   date  |seats|
+|------------|-----------|---------|-----|
+|Vrij Zwemmen|21:30-23:00|Wed 09.12|24/24|
+|Vrij Zwemmen|12:00-13:00|Thu 10.12|18/18|
+|Vrij zwemmen| 7:30-8:30 |Fri 11.12|18/18|
+|Vrij Zwemmen|13:15-14:15|Sat 12.12|18/18|
+
 
 ```markdownTable(data).setParams(row_sep = 'topbottom', padding_width = 5, padding_weight='left').getMarkdown()```
 ```
