@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="py-markdown-table",
-    version="0.2.1",
+    version="0.2.2",
     author="hvalev",
     description="A package used to generate basic markdown tables from a list of dicts",
     long_description=long_description,
