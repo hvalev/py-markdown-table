@@ -1,0 +1,4 @@
+# pytest cache
+.pytest_cache
+py_markdown_table.egg-info
+__pycache__
