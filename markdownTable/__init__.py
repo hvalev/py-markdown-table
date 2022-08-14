@@ -89,12 +89,12 @@ class markdownTable():
             padding[item] = len(item)
         for item in self.data:
             for key in item.keys():
-                if(type(item[key]) is float and self.float_rounding):
+                if (type(item[key]) is float and self.float_rounding):
                     item[key] = round(item[key], self.float_rounding)
                 if self.multiline:
                     multiline_data = item[key].split(" ")
                     multiline_min_width = max(multiline_data, key=len)
-                    if (padding[key]+self.padding_width) < len(multiline_min_width) +self.padding_width:
+                    if (padding[key]+self.padding_width) < len(multiline_min_width) + self.padding_width:
                         padding[key] = len(multiline_min_width)+self.padding_width
                 else:
                     if (padding[key]-self.padding_width) < len(str(item[key])):
@@ -175,7 +175,6 @@ class markdownTable():
         return row
 
     def getMultilineRow(self, item):
-        row = ''
         multiline_items = {}
         for key in self.data[0].keys():
             items = item[key].split(" ")
@@ -203,7 +202,7 @@ class markdownTable():
             if len(value) < multiline_rows:
                 for i in range(len(value), multiline_rows):
                     multiline_items[key].append(" ")
-        
+
         rows = ''
         for ix in range(0, multiline_rows):
             row_dict = {}
@@ -214,12 +213,11 @@ class markdownTable():
                 rows += self.newline_char
         return rows
 
-
     def getBody(self):
         rows = ''
         for ix, item in enumerate(self.data):
             rows += self.getRow(item)
-            if(ix < len(self.data)-1):
+            if (ix < len(self.data)-1):
                 rows += self.newline_char
             if self.row_sep == 'always' and ix < len(self.data)-1:
                 rows += self.var_row_sep + self.newline_char
@@ -234,12 +232,3 @@ class markdownTable():
             return '```'+data+'```'
         else:
             return data
-
-test = [{"A": "row1_A and additional stuff", "B": "row1_B", "C": "row1_C"},
-        {"A": "row2_A", "B": "row2_B and additional stuff", "C": "row2_C"},
-        {"A": "row3_A", "B": "row3_B", "C": "row3_C"}]
-tabletest = markdownTable(test).setParams(padding_width=2,
-                                              padding_weight="centerleft", 
-                                              quote=False,
-                                              multiline=True)
-print(tabletest.getMarkdown())
