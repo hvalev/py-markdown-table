@@ -37,7 +37,6 @@ class markdownTable():
 
     def __init__(self, data):
         self.data = data
-        self.validate()
         self.row_sep = 'always'
         self.padding_width = 0
         self.padding_weight = 'centerleft'
@@ -46,6 +45,7 @@ class markdownTable():
         self.float_rounding = 2
         self.multiline = False
         self.quote = True
+        self.updateMetaParams()
         return
 
     def setParams(
@@ -64,13 +64,16 @@ class markdownTable():
         self.padding_char = padding_char
         self.newline_char = newline_char
         self.float_rounding = float_rounding
-        self.multiline = multiline
         self.quote = quote
+        self.multiline = multiline
         self.updateMetaParams()
         return self
 
     def updateMetaParams(self):
-        self.var_padding = self.getPadding()
+        if self.multiline:
+            self.var_padding = self.multiline
+        else:
+            self.var_padding = self.getPadding()
         self.var_row_sep = self.getRowSepStr()
         self.var_row_sep_last = self.getRowSepLast()
 
@@ -82,6 +85,13 @@ class markdownTable():
             for key in keys:
                 if key not in item:
                     raise Exception('Keys are not uniform')
+        if self.multiline:
+            for row in self.data:
+                for key, item in row.items():
+                    multiline_data = row[key].split(" ")
+                    multiline_max_width = max(multiline_data, key=len)
+                    if (self.var_padding[key]) < len(multiline_max_width):
+                        raise Exception('Contiguous string exists longer than the allocated column width')
 
     def getPadding(self):
         padding = dict()
@@ -91,14 +101,8 @@ class markdownTable():
             for key in item.keys():
                 if (type(item[key]) is float and self.float_rounding):
                     item[key] = round(item[key], self.float_rounding)
-                if self.multiline:
-                    multiline_data = item[key].split(" ")
-                    multiline_min_width = max(multiline_data, key=len)
-                    if (padding[key]+self.padding_width) < len(multiline_min_width) + self.padding_width:
-                        padding[key] = len(multiline_min_width)+self.padding_width
-                else:
-                    if (padding[key]-self.padding_width) < len(str(item[key])):
-                        padding[key] = len(str(item[key]))+self.padding_width
+                if (padding[key]-self.padding_width) < len(str(item[key])):
+                    padding[key] = len(str(item[key]))+self.padding_width
         return padding
 
     def getRowSepStr(self):
@@ -226,6 +230,7 @@ class markdownTable():
         return rows
 
     def getMarkdown(self):
+        self.validate()
         self.updateMetaParams()
         data = self.getHeader()+self.getBody()
         if self.quote:

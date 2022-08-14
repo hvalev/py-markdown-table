@@ -84,6 +84,6 @@ def test_formatting_padding_char():
 
 
 def test_multiline_data():
-    mt = markdownTable(multiline_data).setParams(padding_width=2, padding_weight="centerleft", multiline=True).getMarkdown()
-    res = '```\n+----------------------------------+\n|      A     |      B     |    C   |\n+------------+------------+--------+\n| row1_A and |   row1_B   | row1_C |\n| additional |            |        |\n|    stuff   |            |        |\n+------------+------------+--------+\n|   row2_A   | row2_B and | row2_C |\n|            | additional |        |\n|            |    stuff   |        |\n+------------+------------+--------+\n|   row3_A   |   row3_B   | row3_C |\n+----------------------------------+```'
+    mt = markdownTable(multiline_data).setParams(padding_width=2, padding_weight="centerleft", multiline={"A": 25, "B": 12, "C": 9}).getMarkdown()
+    res = '```\n+------------------------------------------------+\n|            A            |      B     |    C    |\n+-------------------------+------------+---------+\n|  row1_A and additional  |   row1_B   |  row1_C |\n|          stuff          |            |         |\n+-------------------------+------------+---------+\n|          row2_A         | row2_B and |  row2_C |\n|                         | additional |         |\n|                         |    stuff   |         |\n+-------------------------+------------+---------+\n|          row3_A         |   row3_B   |  row3_C |\n+------------------------------------------------+```'
     assert mt == res
