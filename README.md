@@ -22,37 +22,45 @@ where data is a `list` of `dict` where each dict represents a row. Keys must be 
 Chaining `.setParams(...)` to a `markdownTable(data)` object allows you to pass the following keyword arguments:
 
 ```
-|      param      |       type      |     values    |                     description                    |
-|-----------------|-----------------|---------------|----------------------------------------------------|
-|     row_sep     |       str       |               |   Row separation strategy using `----` as pattern  |
-|                 |                 |     always    |                  Separate each row                 |
-|                 |                 |   topbottom   |        Separate the top (header) and bottom        |
-|                 |                 |               |               (last row) of the table              |
-|                 |                 |    markdown   |           Separate only header from body           |
-|                 |                 |      None     |         No row separators will be inserted         |
-|  padding_width  |       int       |               |         Allocate padding to all table cells        |
-|  padding_weight |       str       |               | Strategy for allocating padding within table cells |
-|                 |                 |      left     |    Aligns cell's contents to the end of the cell   |
-|                 |                 |     right     | Aligns cell's contents to the beginning of the cell|
-|                 |                 |   centerleft  |     Centers cell's contents with extra padding     |
-|                 |                 |               |       allocated to the beginning of the cell       |
-|                 |                 |  centerright  |     Centers cell's contents with extra padding     |
-|                 |                 |               |          allocated to the end of the cell          |
-|   padding_char  |       str       |               |       Single character used to fill extra and      |
-|                 |                 |               |       normal padding with. Default is a blank      |
-|                 |                 |               |                     space ` `.                     |
-|   newline_char  |       str       |               |      Custom character appended to each row to      |
-|                 |                 |               |          force a newline. Default is `\n`          |
-|  float_rounding |       int       |               |     Keep values up until `float_rounder` after     |
-|                 |                 |               |        the decimal dot. Default is `2`, but        |
-|                 |                 |               |          can also be set to `None` to not          |
-|                 |                 |               |                 round down floats.                 |
-|      quote      |       bool      |               |       If `true` (default) wrap the generated       |
-|                 |                 |               |        markdown table with block code quote        |
-|    multiline    |  dict<Any,int>  |               |       Predefine the column width by passing a      |
-|                 |                 |               |       dict() with keys matching those of the       |
-|                 |                 |               |        passed data and values -- the desired       |
-|                 |                 |               |        width for each corresponding column.        |
+|      param      |       type      |     values    |                 description                 |
+|-----------------|-----------------|---------------|---------------------------------------------|
+|     row_sep     |       str       |               |     Row separation strategy using `----`    |
+|                 |                 |               |                  as pattern                 |
+|                 |                 |     always    |              Separate each row              |
+|                 |                 |   topbottom   |     Separate the top (header) and bottom    |
+|                 |                 |               |           (last row) of the table           |
+|                 |                 |    markdown   |        Separate only header from body       |
+|                 |                 |      None     |      No row separators will be inserted     |
+|  padding_width  |       int       |               |     Allocate padding to all table cells     |
+|  padding_weight |       str       |               |    Strategy for allocating padding within   |
+|                 |                 |               |                 table cells                 |
+|                 |                 |      left     |Aligns cell's contents to the end of the cell|
+|                 |                 |     right     |        Aligns cell's contents to the        |
+|                 |                 |               |            beginning of the cell            |
+|                 |                 |   centerleft  |      Centers cell's contents with extra     |
+|                 |                 |               |    padding allocated to the beginning of    |
+|                 |                 |               |                   the cell                  |
+|                 |                 |  centerright  |      Centers cell's contents with extra     |
+|                 |                 |               |       padding allocated to the end of       |
+|                 |                 |               |                   the cell                  |
+|   padding_char  |       str       |               |     Single character used to fill extra     |
+|                 |                 |               |     and normal padding with. Default is     |
+|                 |                 |               |              a blank space ` `.             |
+|   newline_char  |       str       |               |    Custom character appended to each row    |
+|                 |                 |               |        to force a newline. Default is       |
+|                 |                 |               |                     `\n`                    |
+|  float_rounding |       int       |               |     Keep values up until `float_rounder`    |
+|                 |                 |               |      after the decimal dot. Default is      |
+|                 |                 |               |         `2`, but can also be set to         |
+|                 |                 |               |       `None` to not round down floats.      |
+|      quote      |       bool      |               |         If `true` (default) wrap the        |
+|                 |                 |               |     generated markdown table with block     |
+|                 |                 |               |                  code quote                 |
+|    multiline    |  dict<Any,int>  |               |    Predefine the column width by passing    |
+|                 |                 |               |      a dict() with keys matching those      |
+|                 |                 |               |       of the passed data and values --      |
+|                 |                 |               |          the desired width for each         |
+|                 |                 |               |            corresponding column.            |
 ```
 
 ## Using it with a dataframe
