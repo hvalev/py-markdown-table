@@ -19,6 +19,6 @@ params = [
     {'param': 'multiline', 'type': 'dict<Any,int>', 'values': '', 'description': 'Predefine the column width by passing a dict() with keys matching those of the passed data and values -- the desired width for each corresponding column.'},
 ]
 
-widths = {'param': 17, 'type': 17, 'values': 15, 'description': 60}
+widths = {'param': 17, 'type': 17, 'values': 15, 'description': 52}
 
 print(markdownTable(params).setParams(padding_char=' ', padding_weight='centerleft', padding_width=3, row_sep='markdown', multiline=widths).getMarkdown())

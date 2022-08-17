@@ -187,7 +187,6 @@ class markdownTable():
             buffer = 0
             spacing_between_items = 0
             while len(items) > 0:
-                print(items)
                 if len(items[0]) + buffer + spacing_between_items + self.padding_width <= self.var_padding[key]:
                     buffer += len(items[0])
                     single_row.append(items.pop(0))
