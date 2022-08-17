@@ -90,8 +90,8 @@ class markdownTable():
                 for key, item in row.items():
                     multiline_data = row[key].split(" ")
                     multiline_max_width = max(multiline_data, key=len)
-                    if (self.var_padding[key]) < len(multiline_max_width):
-                        raise Exception('Contiguous string exists longer than the allocated column width')
+                    if (self.var_padding[key]) < len(multiline_max_width) + self.padding_width:
+                        raise Exception(f'Contiguous string exists longer than the allocated column width for column "{key}" and padding_width "{self.padding_width}"')
 
     def getPadding(self):
         padding = dict()
@@ -183,29 +183,31 @@ class markdownTable():
         for key in self.data[0].keys():
             items = item[key].split(" ")
             column_list = []
-            multiline_row = ''
-            for ix, sub_item in enumerate(items):
-                multiline_row += sub_item
-                if ix+1 < len(items) and len(multiline_row) + len(items[ix+1]) > self.var_padding[key]:
-                    column_list.append(multiline_row)
-                    multiline_row = ''
+            single_row = []
+            buffer = 0
+            spacing_between_items = 0
+            while len(items) > 0:
+                print(items)
+                if len(items[0]) + buffer + spacing_between_items + self.padding_width <= self.var_padding[key]:
+                    buffer += len(items[0])
+                    single_row.append(items.pop(0))
+                    spacing_between_items += len(single_row) - 1
                 else:
-                    multiline_row += ' '
-                if ix+1 == len(items):
-                    column_list.append(sub_item)
+                    column_list.append(" ".join(single_row))
+                    single_row = []
+                    buffer = 0
+                    spacing_between_items = 0
+            column_list.append(' '.join(single_row))
             multiline_items[key] = column_list
 
         # get the max vertical length of the multiline row
-        multiline_rows = 0
-        for key, value in multiline_items.items():
-            if len(value) > multiline_rows:
-                multiline_rows = len(value)
+        multiline_rows = max(map(len, multiline_items.values()))
 
         # fill in blank values
         for key, value in multiline_items.items():
             if len(value) < multiline_rows:
                 for i in range(len(value), multiline_rows):
-                    multiline_items[key].append(" ")
+                    multiline_items[key].append(self.padding_char*self.var_padding[key])
 
         rows = ''
         for ix in range(0, multiline_rows):
