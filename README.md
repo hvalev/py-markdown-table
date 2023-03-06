@@ -1,5 +1,5 @@
 # py-markdown-table
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/hvalev/markdownTable/test'n'publish)
+[![build](https://github.com/hvalev/py-markdown-table/actions/workflows/build.yml/badge.svg)](https://github.com/hvalev/py-markdown-table/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/hvalev/markdownTable/branch/main/graph/badge.svg?token=ZZ8WXO4H6P)](https://codecov.io/gh/hvalev/markdownTable)
 [![Downloads](https://pepy.tech/badge/py-markdown-table)](https://pepy.tech/project/py-markdown-table)
 [![Downloads](https://pepy.tech/badge/py-markdown-table/month)](https://pepy.tech/project/py-markdown-table)
