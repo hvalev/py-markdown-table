@@ -1,6 +1,6 @@
 # py-markdown-table
 [![build](https://github.com/hvalev/py-markdown-table/actions/workflows/build.yml/badge.svg)](https://github.com/hvalev/py-markdown-table/actions/workflows/build.yml)
-[![codecov](https://codecov.io/gh/hvalev/markdown_table/branch/main/graph/badge.svg?token=ZZ8WXO4H6P)](https://codecov.io/gh/hvalev/markdown_table)
+[![codecov](https://codecov.io/gh/hvalev/py-markdown-table/branch/main/graph/badge.svg?token=ZZ8WXO4H6P)](https://codecov.io/gh/hvalev/py-markdown-table)
 [![Downloads](https://pepy.tech/badge/py-markdown-table)](https://pepy.tech/project/py-markdown-table)
 [![Downloads](https://pepy.tech/badge/py-markdown-table/month)](https://pepy.tech/project/py-markdown-table)
 [![Downloads](https://pepy.tech/badge/py-markdown-table/week)](https://pepy.tech/project/py-markdown-table)
