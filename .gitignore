@@ -2,3 +2,7 @@
 .pytest_cache
 py_markdown_table.egg-info
 __pycache__
+build
+debug.log
+.vscode
+*coverage*
