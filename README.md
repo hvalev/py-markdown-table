@@ -5,7 +5,7 @@
 [![Downloads](https://pepy.tech/badge/py-markdown-table/month)](https://pepy.tech/project/py-markdown-table)
 [![Downloads](https://pepy.tech/badge/py-markdown-table/week)](https://pepy.tech/project/py-markdown-table)
 
-Tiny and fast python library with zero dependencies which generates formatted multiline tables in `markdown` including rendering emojis. 
+Tiny python library with zero dependencies which generates formatted multiline tables in `markdown`. 
 
 ## Basic Use
 Install via pip as follows: ```pip install py-markdown-table```
