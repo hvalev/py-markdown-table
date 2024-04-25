@@ -5,7 +5,7 @@
 [![Downloads](https://static.pepy.tech/badge/py-markdown-table/month)](https://pepy.tech/project/py-markdown-table)
 [![Downloads](https://static.pepy.tech/badge/py-markdown-table/week)](https://pepy.tech/project/py-markdown-table)
 
-Tiny python library with zero dependencies which generates formatted multiline tables in `markdown`. 
+Tiny python library with zero dependencies which generates formatted multiline tables in `markdown`.
 
 ## Basic Use
 Install via pip as follows: ```pip install py-markdown-table```
@@ -54,8 +54,8 @@ jokes_list = [
         "joke3": "How does a penguin build its house? Igloos it together!"
     }
 ]
-markdown = markdown_table(jokes_list).set_params(padding_width = 3, 
-                                                 padding_weight = 'centerleft', 
+markdown = markdown_table(jokes_list).set_params(padding_width = 3,
+                                                 padding_weight = 'centerleft',
                                                  multiline = {'joke1': 30, 'joke2': 30, 'joke3': 30}
                                                  ).get_markdown()
 ```
@@ -402,7 +402,7 @@ The namespace `py_markdown_table.utils` provides the functions `count_emojis()` 
     <summary >
     see example
     </summary>
-*Note:* Github's markdown preview does not render emojis as two whole characters, hence the slight offsets in cells containing emojis. 
+*Note:* Github's markdown preview does not render emojis as two whole characters, hence the slight offsets in cells containing emojis.
 
 ```
 +-------------------------------+
@@ -435,7 +435,7 @@ Below is an example from a monospaced terminal, where the table is rendered corr
 
 
 ## Benchmarks
-The table below provide some benchmark results, evaluating the performance on data containing incrementally larger number of `columns`, `rows`, and characters in each table cell (i.e. `cell_size`). You can benchmark it on your own system using the script contained within `py_markdown_table/utils/benchmark.py`. Generally, reasonably-sized tables intended to be read by a human can be generated within a millisecond. 
+The table below provide some benchmark results, evaluating the performance on data containing incrementally larger number of `columns`, `rows`, and characters in each table cell (i.e. `cell_size`). You can benchmark it on your own system using the script contained within `py_markdown_table/utils/benchmark.py`. Generally, reasonably-sized tables intended to be read by a human can be generated within a millisecond.
 
 <details>
     <summary >
