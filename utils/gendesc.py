@@ -1,6 +1,5 @@
 # pylint: skip-file
-# flake8 noqa: E501
-from markdownTable import markdownTable
+from .. import markdown_table
 
 # [monospaced fonts](https://en.wikipedia.org/wiki/Monospaced_font)
 params = [
@@ -131,13 +130,19 @@ params = [
         "values": "",
         "description": "Wraps the generated markdown table in block quotes ```table```. Default is `True`.",
     },
+    {
+        "param": "validate",
+        "type": "bool",
+        "values": "",
+        "description": "Whether to perform parameter validation when calling `set_params`. Default is `True`.",
+    },
 ]
 
 
 widths = {"param": 19, "type": 17, "values": 15, "description": 28}
 
 print(
-    markdownTable(params)
+    markdown_table(params)
     .setParams(
         padding_char=" ",
         padding_weight="centerleft",

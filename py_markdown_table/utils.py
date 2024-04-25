@@ -1,4 +1,5 @@
 """Util functions which may be used outside of the class for convenience"""
+
 from typing import List, Dict
 
 
@@ -39,9 +40,7 @@ def count_emojis(text: str) -> List[Dict]:
             and ord(text[i + 1]) >= 0xDC00
             and ord(text[i + 1]) <= 0xDFFF
         ):
-            code_point = (
-                0x10000 + (ord(char) - 0xD800) * 0x400 + (ord(text[i + 1]) - 0xDC00)
-            )
+            code_point = 0x10000 + (ord(char) - 0xD800) * 0x400 + (ord(text[i + 1]) - 0xDC00)
             if any(start <= code_point <= end for start, end in emoji_ranges):
                 emoji_info = {"index": i, "value": char + text[i + 1], "spacing": 2}
                 emojis.append(emoji_info)
@@ -49,9 +48,7 @@ def count_emojis(text: str) -> List[Dict]:
     return emojis
 
 
-def find_longest_contiguous_strings(
-    data: List[Dict], include_header: bool = False, delimiter: str = " "
-) -> Dict:
+def find_longest_contiguous_strings(data: List[Dict], include_header: bool = False, delimiter: str = " ") -> Dict:
     """Finds the longest contiguous strings in a list of dicts.
 
     Args:
@@ -68,7 +65,7 @@ def find_longest_contiguous_strings(
     longest_strings = {}
     if include_header:
         longest_strings = {key: len(key) for key in data[0].keys()}
-    for dictionary in data:  # pylint: disable=R1702
+    for dictionary in data:
         for key, value in dictionary.items():
             if isinstance(value, str):
                 max_length = 0

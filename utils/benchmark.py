@@ -12,10 +12,7 @@ def generate_dict_list(num_keys, num_dicts, values_length, include_whitespace=Fa
     for _ in range(num_dicts):
         dictionary = {}
         for key in keys:
-            value = "".join(
-                random.choice(string.ascii_letters + string.digits + " ")
-                for _ in range(values_length)
-            )
+            value = "".join(random.choice(string.ascii_letters + string.digits + " ") for _ in range(values_length))
             dictionary[key] = value
         dict_list.append(dictionary)
     return dict_list
@@ -43,9 +40,7 @@ for i in range(4):
     include_whitespace = include_whitespace_range[i]
 
     # Generate the dictionary list for the current parameter combination
-    dictionary_list = generate_dict_list(
-        num_keys, num_dicts, values_length, include_whitespace
-    )
+    dictionary_list = generate_dict_list(num_keys, num_dicts, values_length, include_whitespace)
 
     # Store the parameter combination and the generated dictionary list
     parameter_combinations.append(
@@ -81,9 +76,7 @@ for params in parameter_combinations:
     # print(f"dictionary_list: {params['dictionary_list']}")
 
     start_time = time.time() * 1000
-    markdown_table(params["dictionary_list"]).set_params(
-        padding_width=0, padding_weight="centerleft"
-    ).get_markdown()
+    markdown_table(params["dictionary_list"]).set_params(padding_width=0, padding_weight="centerleft").get_markdown()
     end_time = time.time() * 1000
     elapsed_time = end_time - start_time
     print(f"Benchmark - Elapsed Time: {elapsed_time} milliseconds")

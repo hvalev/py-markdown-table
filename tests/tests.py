@@ -54,7 +54,12 @@ emoji_data = [
         "date": "Thu 10.12",
         "seats": "18/18",
     },
-    {"title": "Vrij Zwemmen", "time": "7:30-8:30", "date": "Fri 11.12", "seats": "😊🌍🎉"},
+    {
+        "title": "Vrij Zwemmen",
+        "time": "7:30-8:30",
+        "date": "Fri 11.12",
+        "seats": "😊🌍🎉",
+    },
     {
         "title": "Vrij Zwemmen",
         "time": "13:15-14:15",
@@ -137,21 +142,13 @@ def test_formatting_markdown():
 
 
 def test_formatting_markdown_noquote():
-    mt = (
-        markdown_table(formatting_data)
-        .set_params(row_sep="markdown", quote=False)
-        .get_markdown()
-    )
+    mt = markdown_table(formatting_data).set_params(row_sep="markdown", quote=False).get_markdown()
     res = "|    title   |    time   |   date  |seats|\n|------------|-----------|---------|-----|\n|Vrij Zwemmen|21:30-23:00|Wed 09.12|24/24|\n|Vrij Zwemmen|12:00-13:00|Thu 10.12|18/18|\n|Vrij Zwemmen| 7:30-8:30 |Fri 11.12|18/18|\n|Vrij Zwemmen|13:15-14:15|Sat 12.12|18/18|"
     assert mt == res
 
 
 def test_formatting_right():
-    mt = (
-        markdown_table(formatting_data)
-        .set_params(row_sep="topbottom", padding_weight="right")
-        .get_markdown()
-    )
+    mt = markdown_table(formatting_data).set_params(row_sep="topbottom", padding_weight="right").get_markdown()
     res = "```\n+----------------------------------------+\n|title       |time       |date     |seats|\n|Vrij Zwemmen|21:30-23:00|Wed 09.12|24/24|\n|Vrij Zwemmen|12:00-13:00|Thu 10.12|18/18|\n|Vrij Zwemmen|7:30-8:30  |Fri 11.12|18/18|\n|Vrij Zwemmen|13:15-14:15|Sat 12.12|18/18|\n+----------------------------------------+```"
     assert mt == res
 
@@ -237,11 +234,7 @@ def test_multirow_header_data():
 
 
 def test_emoji_data():
-    mt = (
-        markdown_table(emoji_data)
-        .set_params(row_sep="topbottom", emoji_spacing="mono")
-        .get_markdown()
-    )
+    mt = markdown_table(emoji_data).set_params(row_sep="topbottom", emoji_spacing="mono").get_markdown()
     res = "```\n+-----------------------------------------+\n|    title   |    time   |   date  | seats|\n|Vrij Zwemmen|21:30-23:00|    😊   | 24/24|\n|Vrij Zwemmen|12:00-13:00|Thu 10.12| 18/18|\n|Vrij Zwemmen| 7:30-8:30 |Fri 11.12|😊🌍🎉|\n|Vrij Zwemmen|13:15-14:15|Sat 12.12| 20/20|\n+-----------------------------------------+```"
     assert mt == res
 

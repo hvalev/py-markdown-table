@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-"""Class used to generate formatted markdown tables. See class description"""
-import warnings
 import math
 from typing import Tuple, List, Dict
 from py_markdown_table.utils import count_emojis, split_list_by_indices
 
 
-class markdown_table:  # pylint: disable=C0103,R0902
+class markdown_table:
     """
     A class used to generate padded tables in a markdown code block
 
@@ -133,6 +130,7 @@ class markdown_table:  # pylint: disable=C0103,R0902
         self.multiline_strategy = "rows"
         self.multiline_delimiter = " "
         self.quote = True
+        self.validate = True
         self.__update_meta_params()
 
     def set_params(
@@ -142,13 +140,14 @@ class markdown_table:  # pylint: disable=C0103,R0902
         padding_weight: str = "centerleft",
         padding_char: str = " ",
         newline_char: str = "\n",
-        float_rounding: Tuple[int, type(None)] = None,
+        float_rounding: Tuple[int, None] = None,
         emoji_spacing: str = None,
-        multiline: Tuple[List[Dict], type(None)] = None,
+        multiline: Tuple[List[Dict], None] = None,
         multiline_strategy: str = "rows",
         multiline_delimiter: str = " ",
         quote: bool = True,
-    ):  # pylint: disable=R0913
+        validate: bool = True,
+    ):
         """Setter function for markdown table rendering parameters
 
         Args:
@@ -178,7 +177,9 @@ class markdown_table:  # pylint: disable=C0103,R0902
         self.multiline_strategy = multiline_strategy
         self.multiline_delimiter = multiline_delimiter
         self.quote = quote
-        self.__validate_parameters()
+        self.validate = validate
+        if validate:
+            self.__validate_parameters()
         self.__update_meta_params()
         return self
 
@@ -240,10 +241,7 @@ class markdown_table:  # pylint: disable=C0103,R0902
                 f"multiline_strategy value of '{self.multiline_strategy}' is not valid. \
                     Possible values are {*multiline_strategy_values,}."
             )
-        if (
-            not isinstance(self.multiline_delimiter, str)
-            or len(str(self.multiline_delimiter)) != 1
-        ):
+        if not isinstance(self.multiline_delimiter, str) or len(str(self.multiline_delimiter)) != 1:
             raise ValueError(
                 f"multiline_delimiter value of '{self.multiline_delimiter}' is not valid. \
                     Please use a single character string."
@@ -261,17 +259,13 @@ class markdown_table:  # pylint: disable=C0103,R0902
         for item in self.data:
             for key in keys:
                 if key not in item:
-                    raise ValueError(
-                        "Dictionary keys are not uniform across data variable."
-                    )
+                    raise ValueError("Dictionary keys are not uniform across data variable.")
         if self.multiline:
             for row in self.data:
                 for key, item in row.items():
                     multiline_data = row[key].split(self.multiline_delimiter)
                     multiline_max_width = max(multiline_data, key=len)
-                    if (self.var_padding[key]) < (
-                        len(multiline_max_width) + self.padding_width
-                    ):
+                    if (self.var_padding[key]) < (len(multiline_max_width) + self.padding_width):
                         raise ValueError(
                             f"Contiguous string exists longer than the \
                                 allocated column width for column '{key}' \
@@ -343,7 +337,7 @@ class markdown_table:  # pylint: disable=C0103,R0902
     def __get_normal_row(self, item):
         row = ""
         for key in self.data[0].keys():
-            # preprend emoji pre-processing for cell values
+            # prepend emoji pre-processing for cell values
             emoji = []
             if self.emoji_spacing == "mono":
                 emoji = count_emojis(item[key])
@@ -352,13 +346,13 @@ class markdown_table:  # pylint: disable=C0103,R0902
             local_padding = self.var_padding[key] - len(emoji)
             margin = local_padding - len(str(item[key]))
             right = self.__get_margin(margin)
-            row += "|" + str(item[key]).rjust(
-                local_padding - right, self.padding_char
-            ).ljust(local_padding, self.padding_char)
+            row += "|" + str(item[key]).rjust(local_padding - right, self.padding_char).ljust(
+                local_padding, self.padding_char
+            )
         row += "|"
         return row
 
-    def __get_multiline_row(self, item):  # pylint: disable=R0912,R0914
+    def __get_multiline_row(self, item):
         multiline_items = {}
         # process multiline rows column by column
         for key in self.data[0].keys():
@@ -373,9 +367,7 @@ class markdown_table:  # pylint: disable=C0103,R0902
                     fully_split_cell.append(element)
                 # if emojis are present, split by emoji into a list and concat
                 else:
-                    emoji_indices = [
-                        emoji["index"] for emoji in emojis if "index" in emoji
-                    ]
+                    emoji_indices = [emoji["index"] for emoji in emojis if "index" in emoji]
                     emoji_split_element = split_list_by_indices(element, emoji_indices)
                     fully_split_cell = fully_split_cell + emoji_split_element
 
@@ -386,17 +378,9 @@ class markdown_table:  # pylint: disable=C0103,R0902
             while len(fully_split_cell) > 0:
                 # check item length and adjust for presence of emoji
                 # only check the first element since we are using a stack
-                item_length = len(fully_split_cell[0]) + len(
-                    count_emojis(fully_split_cell[0])
-                )
+                item_length = len(fully_split_cell[0]) + len(count_emojis(fully_split_cell[0]))
 
-                if (
-                    item_length
-                    + item_prev_length
-                    + spacing_between_items
-                    + self.padding_width
-                    <= self.var_padding[key]
-                ):
+                if item_length + item_prev_length + spacing_between_items + self.padding_width <= self.var_padding[key]:
                     # count just the items
                     item_prev_length += item_length
                     # add item to the current row
@@ -450,9 +434,9 @@ class markdown_table:  # pylint: disable=C0103,R0902
             for key in self.data[0].keys():
                 margin = self.var_padding[key] - len(key)
                 right = self.__get_margin(margin)
-                header += "|" + key.rjust(
-                    self.var_padding[key] - right, self.padding_char
-                ).ljust(self.var_padding[key], self.padding_char)
+                header += "|" + key.rjust(self.var_padding[key] - right, self.padding_char).ljust(
+                    self.var_padding[key], self.padding_char
+                )
             header += "|" + self.newline_char
 
         if self.row_sep == "always":
@@ -482,32 +466,3 @@ class markdown_table:  # pylint: disable=C0103,R0902
         if self.quote:
             return "```" + data + "```"
         return data
-
-    # backwards compatibility
-    def getHeader(self):  # pylint: disable=C0116,C0103
-        warnings.warn(
-            "the getHeader() function will be deprecated soon. Please use get_header() instead",
-            DeprecationWarning,
-        )
-        return self.get_header()
-
-    def getBody(self):  # pylint: disable=C0116,C0103
-        warnings.warn(
-            "the getBody() function will be deprecated soon. Please use get_body() instead",
-            DeprecationWarning,
-        )
-        return self.get_body()
-
-    def getMarkdown(self):  # pylint: disable=C0116,C0103
-        warnings.warn(
-            "the getMarkdown() function will be deprecated soon. Please use get_markdown() instead",
-            DeprecationWarning,
-        )
-        return self.get_markdown()
-
-    def setParams(self, **keywords):  # pylint: disable=C0116,C0103
-        warnings.warn(
-            "the setParams() function will be deprecated soon. Please use set_params() instead",
-            DeprecationWarning,
-        )
-        return self.set_params(**keywords)
