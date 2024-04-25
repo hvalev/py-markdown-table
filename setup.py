@@ -1,11 +1,11 @@
-from setuptools import setup,find_packages
+from setuptools import setup, find_packages
 
-with open("README.md", "r", encoding="utf-8") as fh:
+with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
     name="py-markdown-table",
-    version="0.4.0",
+    version="1.0.0",
     author="hvalev",
     description="Package that generates markdown tables from a list of dicts",
     long_description=long_description,

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=46.4.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.poetry]
+name = "py-markdown-table"
+version = "1.0.0"
+description = "Tiny python package with zero dependencies which can generate formatted multiline markdown tables."
+authors = ["hvalev"]
+license = "MIT"
+homepage = "https://github.com/hvalev/py-markdown-table"
+
+[tool.poetry.dependencies]
+python = ">=3.8"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.1.1"
+pytest-cov = "^3.0"
+pre-commit-hooks = "^4.5.0"
+black = "^24.4.1"
+
+[tool.black]
+line-length = 120
+
+[tool.ruff]
+line-length = 120
