@@ -8,10 +8,13 @@
 Tiny python library with zero dependencies which generates formatted multiline tables in `markdown`. 
 
 ## Basic Use
-Install via pip as follows: ```pip install py-markdown-table```
+Install via pip as follows: 
+```bash
+pip install py-markdown-table
+```
 
 Pass a `list` of `dict`s where the `dict`s must have uniform keys which serve as column headers and the values are expanded to be rows. Simple example with no special formatting:
-```
+```python
 from py_markdown_table.markdown_table import markdown_table
 data = [
     {
@@ -40,7 +43,7 @@ print(markdown)
 ```
 
 A more comprehensive example showcasing some of the formatting options:
-```
+```python
 from py_markdown_table.markdown_table import markdown_table
 jokes_list = [
     {
@@ -74,7 +77,7 @@ markdown = markdown_table(jokes_list).set_params(padding_width = 3,
 ```
 
 You can also use pandas dataframes by formatting them as follows:
-```
+```python
 from py_markdown_table.markdown_table import markdown_table
 data = df.to_dict(orient='records')
 markdown_table(data).get_markdown()
@@ -188,7 +191,10 @@ To add parameters to how the markdown table is formatted, you can use the `set_p
 The namespace `py_markdown_table.utils` provides the functions `count_emojis()` and `find_longest_contiguous_strings()`. `count_emojis()` detects emojis and their position in a given string, and `find_longest_contiguous_strings()` finds the longest continuous strings present in the rows and/or columns of your input data. `find_longest_contiguous_strings()` can be useful to figure out the minimal width of each column given a particular data.
 
 ## Further Examples
-```markdown_table(data).set_params(row_sep = 'always').get_markdown()```
+### Row separatation
+```python
+markdown_table(data).set_params(row_sep = 'always').get_markdown()
+```
 <details>
     <summary >
     see example
@@ -210,7 +216,9 @@ The namespace `py_markdown_table.utils` provides the functions `count_emojis()` 
 </details>
 <br/>
 
-```markdown_table(data).set_params(row_sep = 'topbottom').get_markdown()```
+```python
+markdown_table(data).set_params(row_sep = 'topbottom').get_markdown()
+```
 <details>
     <summary >
     see example
@@ -228,42 +236,48 @@ The namespace `py_markdown_table.utils` provides the functions `count_emojis()` 
 </details>
 <br/>
 
-```markdown_table(data).set_params(row_sep = 'markdown').get_markdown()```
+```python
+markdown_table(data).set_params(row_sep = 'markdown').get_markdown()
+```
 <details>
     <summary >
     see example
     </summary>
 
 ```
-|    title   |    time   |   date  |seats|
-|------------|-----------|---------|-----|
-|Vrij Zwemmen|21:30-23:00|Wed 09.12|24/24|
-|Vrij Zwemmen|12:00-13:00|Thu 10.12|18/18|
-|Vrij zwemmen| 7:30-8:30 |Fri 11.12|18/18|
-|Vrij Zwemmen|13:15-14:15|Sat 12.12|18/18|
-```
-</details>
-<br/>
-
-
-```markdown_table(data).set_params(row_sep = 'markdown', quote = False).get_markdown()```
-<details>
-    <summary >
-    see example
-    </summary>
-
 |    title   |    time   |   date  |seats|
 |------------|-----------|---------|-----|
 |Vrij Zwemmen|21:30-23:00|Wed 09.12|24/24|
 |Vrij Zwemmen|12:00-13:00|Thu 10.12|18/18|
 |Vrij zwemmen| 7:30-8:30 |Fri 11.12|18/18|
 |Vrij Zwemmen|13:15-14:15|Sat 12.12|18/18|
+```
 </details>
 <br/>
 
 
+```python
+markdown_table(data).set_params(row_sep = 'markdown', quote = False).get_markdown()
+```
+<details>
+    <summary >
+    see example
+    </summary>
 
-```markdown_table(data).set_params(row_sep = 'topbottom', padding_width = 5, padding_weight = 'left').get_markdown()```
+|    title   |    time   |   date  |seats|
+|------------|-----------|---------|-----|
+|Vrij Zwemmen|21:30-23:00|Wed 09.12|24/24|
+|Vrij Zwemmen|12:00-13:00|Thu 10.12|18/18|
+|Vrij zwemmen| 7:30-8:30 |Fri 11.12|18/18|
+|Vrij Zwemmen|13:15-14:15|Sat 12.12|18/18|
+</details>
+<br/>
+
+
+### Padding, padding weight and padding char
+```python
+markdown_table(data).set_params(row_sep = 'topbottom', padding_width = 5, padding_weight = 'left').get_markdown()
+```
 <details>
     <summary >
     see example
@@ -282,7 +296,9 @@ The namespace `py_markdown_table.utils` provides the functions `count_emojis()` 
 <br/>
 
 
-```markdown_table(data).set_params(row_sep = 'topbottom', padding_width = 5, padding_weight = 'centerright').get_markdown()```
+```python
+markdown_table(data).set_params(row_sep = 'topbottom', padding_width = 5, padding_weight = 'centerright').get_markdown()
+```
 <details>
     <summary >
     see example
@@ -301,7 +317,9 @@ The namespace `py_markdown_table.utils` provides the functions `count_emojis()` 
 <br/>
 
 
-```markdown_table(data).set_params(row_sep = 'always', padding_width = 5, padding_weight = 'centerright', padding_char = '.').get_markdown()```
+```python
+markdown_table(data).set_params(row_sep = 'always', padding_width = 5, padding_weight = 'centerright', padding_char = '.').get_markdown()
+```
 <details>
     <summary >
     see example
@@ -323,7 +341,10 @@ The namespace `py_markdown_table.utils` provides the functions `count_emojis()` 
 </details>
 <br/>
 
-`markdown_table(data).set_params(padding_width = 0, padding_weight = "centerleft", multiline = {"A": 25, "B": 12, "C": 9}).get_markdown()`
+### Multiline and emoji
+```python
+markdown_table(data).set_params(padding_width = 0, padding_weight = "centerleft", multiline = {"A": 25, "B": 12, "C": 9}).get_markdown()
+```
 <details>
     <summary >
     see example
@@ -347,7 +368,9 @@ The namespace `py_markdown_table.utils` provides the functions `count_emojis()` 
 <br/>
 
 
-`markdown_table(data).set_params(padding_width = 2, padding_weight = "centerleft", multiline = {"A": 25, "B": 12, "C": 9}).get_markdown())`
+```python
+markdown_table(data).set_params(padding_width = 2, padding_weight = "centerleft", multiline = {"A": 25, "B": 12, "C": 9}).get_markdown())
+```
 <details>
     <summary >
     see example
@@ -370,7 +393,9 @@ The namespace `py_markdown_table.utils` provides the functions `count_emojis()` 
 <br/>
 
 
-`markdown_table(data).set_params(row_sep = "always", multiline = {"those are multi rows": 5}, multiline_strategy = "rows_and_header").get_markdown()`
+```python
+markdown_table(data).set_params(row_sep = "always", multiline = {"those are multi rows": 5}, multiline_strategy = "rows_and_header").get_markdown()
+```
 <details>
     <summary >
     see example
@@ -397,7 +422,9 @@ The namespace `py_markdown_table.utils` provides the functions `count_emojis()` 
 <br/>
 
 
-`markdown_table(data).set_params(row_sep = "topbottom", emoji_spacing = "mono", multiline = {"title that is maybe too long": 7, "time": 11, "date": 5, "seats": 5,}, multiline_strategy = "rows_and_header").get_markdown()`
+```python
+markdown_table(data).set_params(row_sep = "topbottom", emoji_spacing = "mono", multiline = {"title that is maybe too long": 7, "time": 11, "date": 5, "seats": 5,}, multiline_strategy = "rows_and_header").get_markdown()
+```
 <details>
     <summary >
     see example
