@@ -1,17 +1,17 @@
-from setuptools import setup,find_packages
+from setuptools import setup
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
     name="py-markdown-table",
-    version="0.4.0",
+    version="0.4.1",
     author="hvalev",
     description="Package that generates markdown tables from a list of dicts",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/hvalev/py-markdown-table",
-    packages=find_packages(),
+    packages=["py_markdown_table"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
