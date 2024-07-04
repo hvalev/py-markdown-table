@@ -11,7 +11,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/hvalev/py-markdown-table",
-    packages=["py_markdown_table"],
+    packages=["py_markdown_table", "markdownTable"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
