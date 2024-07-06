@@ -1,127 +1,45 @@
 # -*- coding: utf-8 -*-
 """Class used to generate formatted markdown tables. See class description"""
-import warnings
 import math
-from typing import Tuple, List, Dict
+from typing import Optional, List, Dict, Union
 from py_markdown_table.utils import count_emojis, split_list_by_indices
 
 
-class markdown_table:  # pylint: disable=C0103,R0902
+class markdown_table:  # noqa: N801
     """
-    A class used to generate padded tables in a markdown code block
-
-    +--------------------------------------------------------------------------------------------------+
-    |         param         |         type        |       values      |           description          |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |        row_sep        |         str         |                   |  Row separation strategy using |
-    |                       |                     |                   |        `----` as pattern       |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |                       |                     |       always      |        Separate each row       |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |                       |                     |     topbottom     |  Separate the top (header) and |
-    |                       |                     |                   | bottom (last row) of the table |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |                       |                     |      markdown     | Separate only header from body |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |                       |                     |        None       |    No row separators will be   |
-    |                       |                     |                   |            inserted            |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |     padding_width     |         int         |                   |  Allocate padding to all table |
-    |                       |                     |                   |              cells             |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |     padding_weight    |         str         |                   |     Strategy for allocating    |
-    |                       |                     |                   |   padding within table cells   |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |                       |                     |        left       |  Aligns the cell's contents to |
-    |                       |                     |                   |       the end of the cell      |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |                       |                     |       right       |  Aligns the cell's contents to |
-    |                       |                     |                   |    the beginning of the cell   |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |                       |                     |     centerleft    |  Centers cell's contents with  |
-    |                       |                     |                   | extra padding allocated to the |
-    |                       |                     |                   |      beginning of the cell     |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |                       |                     |    centerright    |  Centers cell's contents with  |
-    |                       |                     |                   | extra padding allocated to the |
-    |                       |                     |                   |         end of the cell        |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |      padding_char     |         str         |                   |  Single character used to fill |
-    |                       |                     |                   |   padding with. Default is a   |
-    |                       |                     |                   |        blank space ` `.        |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |      newline_char     |         str         |                   | Character appended to each row |
-    |                       |                     |                   | to force a newline. Default is |
-    |                       |                     |                   |              `\\n`             |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |     float_rounding    |         int         |                   | Integer denoting the precision |
-    |                       |                     |                   | of cells of `floats` after the |
-    |                       |                     |                   |    decimal point. Default is   |
-    |                       |                     |                   |             `None`.            |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |     emoji_spacing     |         str         |                   |  Strategy for rendering emojis |
-    |                       |                     |                   |    in tables. Currently only   |
-    |                       |                     |                   |     `mono` is supported for    |
-    |                       |                     |                   |  monospaced fonts. Default is  |
-    |                       |                     |                   |  `None` which disables special |
-    |                       |                     |                   |       handling of emojis.      |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |       multiline       |    dict<Any,int>    |                   |     Renders the table with     |
-    |                       |                     |                   | predefined widths by passing a |
-    |                       |                     |                   |  `dict` with `keys` being the  |
-    |                       |                     |                   |  column names (e.g. equivalent |
-    |                       |                     |                   |  to those in the passed `data` |
-    |                       |                     |                   |  variable) and `values` -- the |
-    |                       |                     |                   |  `width` of each column as an  |
-    |                       |                     |                   |  integer. Note that the width  |
-    |                       |                     |                   |  of a column cannot be smaller |
-    |                       |                     |                   |   than the longest contiguous  |
-    |                       |                     |                   |   string present in the data.  |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |   multiline_strategy  |         str         |                   |  Strategy applied to rendering |
-    |                       |                     |                   |   contents in multiple lines.  |
-    |                       |                     |                   |   Possible values are `rows`,  |
-    |                       |                     |                   | `header` or `rows_and_header`. |
-    |                       |                     |                   |  The default value is `rows`.  |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |                       |                     |        rows       |  Splits only rows overfilling  |
-    |                       |                     |                   | by the predefined column width |
-    |                       |                     |                   | as provided in the `multiline` |
-    |                       |                     |                   |            variable            |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |                       |                     |       header      |     Splits only the header     |
-    |                       |                     |                   |  overfilling by the predefined |
-    |                       |                     |                   |   column width as provided in  |
-    |                       |                     |                   |    the `multiline` variable    |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |                       |                     |  rows_and_header  |     Splits rows and header     |
-    |                       |                     |                   |  overfilling by the predefined |
-    |                       |                     |                   |   column width as provided in  |
-    |                       |                     |                   |    the `multiline` variable    |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |  multiline_delimiter  |         str         |                   | Character that will be used to |
-    |                       |                     |                   |  split a cell's contents into  |
-    |                       |                     |                   |   multiple rows. The default   |
-    |                       |                     |                   |   value is a blank space ` `.  |
-    +-----------------------+---------------------+-------------------+--------------------------------+
-    |         quote         |         bool        |                   |  Wraps the generated markdown  |
-    |                       |                     |                   |      table in block quotes     |
-    |                       |                     |                   |     ```table```. Default is    |
-    |                       |                     |                   |             `True`.            |
-    +--------------------------------------------------------------------------------------------------+
+    Class used to generate padded tables in a markdown code block
 
     Methods
     -------
+    get_markdown()
+        gets complete escaped markdown table
     get_header()
         gets unescaped table header
     get_body()
         gets unescaped table content
-    get_markdown()
-        gets complete escaped markdown table
     """
 
-    def __init__(self, data):
-        self.data: List[Dict] = data
+    def __init__(
+        self, 
+        data: Union[List[Dict], Dict],
+        skip_data_validation: bool = False,
+    ):
+        """
+        Initialize markdown_table with support for various rendering parameters.
+
+        Args:
+        `data` (List[Dict]): The data to be rendered in the markdown table. \n
+        `skip_data_validation` (bool, optional): skip the data validation step before rending a table. Useful when renderers change the length of a string (i.e. markdown urls). \n
+            Default is `False` \n
+
+        """
+        if not isinstance(data, list) or not all(isinstance(elem, dict) for elem in data):
+            raise ValueError("data is not of type list or elements are not of type dict")
+        if len(data) == 0:
+            raise ValueError("Data variable contains no elements.")
+        self.data = data
+
+        # set defaults
         self.row_sep = "always"
         self.padding_width = 0
         self.padding_weight = "centerleft"
@@ -133,8 +51,13 @@ class markdown_table:  # pylint: disable=C0103,R0902
         self.multiline_strategy = "rows"
         self.multiline_delimiter = " "
         self.quote = True
-        self.__update_meta_params()
 
+        if not skip_data_validation:
+            self.__validate_data(data)
+
+        self.__validate_parameters()
+        self.__update_meta_params()
+        
     def set_params(
         self,
         row_sep: str = "always",
@@ -142,30 +65,51 @@ class markdown_table:  # pylint: disable=C0103,R0902
         padding_weight: str = "centerleft",
         padding_char: str = " ",
         newline_char: str = "\n",
-        float_rounding: Tuple[int, type(None)] = None,
-        emoji_spacing: str = None,
-        multiline: Tuple[List[Dict], type(None)] = None,
+        float_rounding: Optional[int] = None,
+        emoji_spacing: Optional[str] = None,
+        multiline: Optional[Dict] = None,
         multiline_strategy: str = "rows",
         multiline_delimiter: str = " ",
         quote: bool = True,
-    ):  # pylint: disable=R0913
-        """Setter function for markdown table rendering parameters
+    ):
+        """
+        Setter function for markdown table rendering parameters.
 
         Args:
-            row_sep (str, optional): _description_. Defaults to "always".
-            padding_width (int, optional): _description_. Defaults to 0.
-            padding_weight (str, optional): _description_. Defaults to "centerleft".
-            padding_char (str, optional): _description_. Defaults to " ".
-            newline_char (str, optional): _description_. Defaults to "\n".
-            float_rounding (Tuple[int, type, optional): _description_. Defaults to None.
-            emoji_spacing (str, optional): _description_. Defaults to None.
-            multiline (Tuple[List[Dict], type, optional): _description_. Defaults to None.
-            multiline_strategy (str, optional): _description_. Defaults to "rows".
-            multiline_delimiter (str, optional): _description_. Defaults to " ".
-            quote (bool, optional): _description_. Defaults to True.
+        `row_sep` (str, optional): Row separation strategy using `----` as pattern. Possible values are:
+            `always`: Separate each row.
+            `topbottom`: Separate the top (header) and bottom (last row) of the table.
+            `markdown`: Separate only the header from the body.
+            `None`: No row separators will be inserted. Defaults to "always". \n
+        `padding_width` (int, optional): Width of padding to allocate to all table cells. Defaults to `0`. \n
+        `padding_weight` (str, optional): Strategy for allocating padding within table cells. Possible values are:
+            `left`: Aligns the cell's contents to the end of the cell.
+            `right`: Aligns the cell's contents to the beginning of the cell.
+            `centerleft`: Centers cell's contents with extra padding allocated to the beginning of the cell.
+            `centerright`: Centers cell's contents with extra padding allocated to the end of the cell.
+            Defaults to `centerleft`. \n
+        `padding_char` (str, optional): Single character used to fill padding. Default is a blank space ` `. \n
+        `newline_char` (str, optional): Character appended to each row to force a newline. Default is `\\n`. \n
+        `float_rounding` (Optional[int], optional): Integer denoting the precision of cells with `float` values after the decimal point. 
+            Default is `None`. \n
+        `emoji_spacing` (Optional[str], optional): Strategy for rendering emojis in tables. 
+            `mono` will emojis as single characters, suitable for monospaced fonts.
+            `None` will not detect and process emojis. 
+            Default is `None`. \n
+        `multiline` (Optional[Dict[str, int]], optional): Renders the table with predefined widths by passing a dictionary with column names as keys and their respective widths as values. Note that the width of a column cannot be smaller than the longest contiguous string present in the data.
+            Default is `None`. \n
+        `multiline_strategy` (str, optional): Strategy applied to rendering contents in multiple lines. Possible values are:
+            `rows`: Splits only rows overfilling the predefined column width.
+            `header`: Splits only the header overfilling the predefined column width.
+            `rows_and_header`: Splits rows and header overfilling the predefined column width.
+            Default is `rows`. \n
+        `multiline_delimiter` (str, optional): Character that will be used to split a cell's contents into multiple rows.
+            Default is a blank space ` `. \n
+        `quote` (bool, optional): Wraps the generated markdown table in block quotes ` ```table``` `. 
+            Default is `True`.
 
         Returns:
-            _type_: _description_
+            self: Returns the instance with updated parameters.
         """
         self.row_sep = row_sep
         self.padding_width = padding_width
@@ -178,11 +122,13 @@ class markdown_table:  # pylint: disable=C0103,R0902
         self.multiline_strategy = multiline_strategy
         self.multiline_delimiter = multiline_delimiter
         self.quote = quote
+        
         self.__validate_parameters()
         self.__update_meta_params()
         return self
 
     def __update_meta_params(self):
+        """Update and store internal meta-parameters"""
         if self.multiline:
             self.var_padding = self.multiline
             # add user-defined padding to the provided multiline column width dict
@@ -194,92 +140,61 @@ class markdown_table:  # pylint: disable=C0103,R0902
         self.var_row_sep_last = self.__get_row_sep_last()
 
     def __validate_parameters(self):
-        row_sep_values = ["always", "topbottom", "markdown", None]
-        padding_weight_values = ["left", "right", "centerleft", "centerright"]
-        emoji_spacing_values = ["mono", None]
-        multiline_strategy_values = ["rows", "header", "rows_and_header"]
-        if self.row_sep not in row_sep_values:
-            raise ValueError(
-                f"row_sep value of '{self.row_sep}' is not valid. \
-                    Possible values are {*row_sep_values,}."
-            )
-        if not isinstance(self.padding_width, int):
-            raise ValueError(
-                f"padding_width value of '{self.padding_width}' is not valid. \
-                    Please use an integer."
-            )
-        if self.padding_weight not in padding_weight_values:
-            raise ValueError(
-                f"padding_weight value of '{self.row_sep}' is not valid. \
-                    Possible values are {*padding_weight_values,}."
-            )
-        if not isinstance(self.padding_char, str) or len(str(self.padding_char)) != 1:
-            raise ValueError(
-                f"padding_char value of '{self.padding_char}' is not valid. \
-                    Please use a single character string."
-            )
-        # Do not check for the validity of a newline character
-        # self.newline_char = newline_char
-        if not isinstance(self.float_rounding, (type(None), int)):
-            raise ValueError(
-                f"float_rounding value of '{self.float_rounding}' is not valid. \
-                    Please use an integer or leave as None."
-            )
-        if self.emoji_spacing not in emoji_spacing_values:
-            raise ValueError(
-                f"emoji_spacing value of '{self.emoji_spacing}' is not valid. \
-                    Possible values are {*emoji_spacing_values,}."
-            )
-        if not isinstance(self.multiline, (type(None), dict)):
-            raise ValueError(
-                f"multiline value of '{self.multiline}' is not valid. \
-                    Please use an dict or leave as None."
-            )
-        if self.multiline_strategy not in multiline_strategy_values:
-            raise ValueError(
-                f"multiline_strategy value of '{self.multiline_strategy}' is not valid. \
-                    Possible values are {*multiline_strategy_values,}."
-            )
-        if (
-            not isinstance(self.multiline_delimiter, str)
-            or len(str(self.multiline_delimiter)) != 1
-        ):
-            raise ValueError(
-                f"multiline_delimiter value of '{self.multiline_delimiter}' is not valid. \
-                    Please use a single character string."
-            )
-        if not isinstance(self.quote, bool):
-            raise ValueError(
-                f"quote value of '{self.quote}' is not valid. \
-                    Please use a boolean."
-            )
+        valid_values = {
+            "row_sep": ["always", "topbottom", "markdown", None],
+            "padding_weight": ["left", "right", "centerleft", "centerright"],
+            "emoji_spacing": ["mono", None],
+            "multiline_strategy": ["rows", "header", "rows_and_header"]
+        }
 
-    def __validate_data(self):
-        if len(self.data) < 1:
-            raise ValueError("Data variable contains no elements.")
-        keys = self.data[0].keys()
-        for item in self.data:
-            for key in keys:
-                if key not in item:
-                    raise ValueError(
-                        "Dictionary keys are not uniform across data variable."
-                    )
+        for attr, values in valid_values.items():
+            if getattr(self, attr) not in values:
+                raise ValueError(f"{attr} value of '{getattr(self, attr)}' is not valid. Possible values are {values}.")
+
+        if not isinstance(self.padding_width, int):
+            raise ValueError(f"padding_width value of '{self.padding_width}' is not valid. Please use an integer.")
+
+        if not isinstance(self.padding_char, str) or len(self.padding_char) != 1:
+            raise ValueError(f"padding_char value of '{self.padding_char}' is not valid. Please use a single character string.")
+
+        if not isinstance(self.float_rounding, (type(None), int)):
+            raise ValueError(f"float_rounding value of '{self.float_rounding}' is not valid. Please use an integer or leave as None.")
+
+        if not isinstance(self.multiline, (type(None), dict)):
+            raise ValueError(f"multiline value of '{self.multiline}' is not valid. Please use a dict or leave as None.")
+
+        if not isinstance(self.multiline_delimiter, str) or len(self.multiline_delimiter) != 1:
+            raise ValueError(f"multiline_delimiter value of '{self.multiline_delimiter}' is not valid. Please use a single character string.")
+
+        if not isinstance(self.quote, bool):
+            raise ValueError(f"quote value of '{self.quote}' is not valid. Please use a boolean.")
+
+
+    def __validate_data(self, data):
+        # Check if all dictionaries in self.data have uniform keys
+        keys = set(data[0].keys())  # Use set for fast lookup
+        for item in data:
+            if not isinstance(item, dict):
+                raise TypeError("Each element in data must be a dictionary.")
+            if set(item.keys()) != keys:
+                raise ValueError("Dictionary keys are not uniform across data variable.")
+
         if self.multiline:
-            for row in self.data:
-                for key, item in row.items():
-                    multiline_data = row[key].split(self.multiline_delimiter)
-                    multiline_max_width = max(multiline_data, key=len)
-                    if (self.var_padding[key]) < (
-                        len(multiline_max_width) + self.padding_width
-                    ):
-                        raise ValueError(
-                            f"Contiguous string exists longer than the \
-                                allocated column width for column '{key}' \
-                                    and padding_width '{self.padding_width}'."
-                        )
+            for row in data:
+                for key in row.keys():
+                    if key in self.var_padding:
+                        multiline_data = row[key].split(self.multiline_delimiter)
+                        multiline_max_width = max(multiline_data, key=len)
+                        if len(multiline_max_width) + self.padding_width > self.var_padding[key]:
+                            raise ValueError(
+                                f"Contiguous string exists longer than the allocated column width "
+                                f"for column '{key}' and padding_width '{self.padding_width}'."
+                            )
+                    else:
+                        raise KeyError(f"Key '{key}' not found in var_padding.")
 
     def __get_padding(self):
-        """Calculate table-wide padding. Internal method, which should never be called."""
+        """Calculate table-wide padding."""
         padding = {}
         for item in self.data[0].keys():
             padding[item] = len(item)
@@ -358,80 +273,62 @@ class markdown_table:  # pylint: disable=C0103,R0902
         row += "|"
         return row
 
-    def __get_multiline_row(self, item):  # pylint: disable=R0912,R0914
+    def __get_multiline_row(self, item):
         multiline_items = {}
-        # process multiline rows column by column
+
+        # Helper function to process each element and split by emojis if present
+        def split_and_process_element(element):
+            emojis = count_emojis(element)
+            if not emojis:
+                return [element]
+            emoji_indices = [emoji["index"] for emoji in emojis if "index" in emoji]
+            return split_list_by_indices(element, emoji_indices)
+
+        # Process each column in the row
         for key in self.data[0].keys():
-            # split cell's contents by delimiter
-            delimiter_split_cell = item[key].split(self.multiline_delimiter)
             fully_split_cell = []
-            # iterate over each element in the split
-            for element in delimiter_split_cell:
-                emojis = count_emojis(element)
-                # if no emojis are found just append the element
-                if len(emojis) == 0:
-                    fully_split_cell.append(element)
-                # if emojis are present, split by emoji into a list and concat
-                else:
-                    emoji_indices = [
-                        emoji["index"] for emoji in emojis if "index" in emoji
-                    ]
-                    emoji_split_element = split_list_by_indices(element, emoji_indices)
-                    fully_split_cell = fully_split_cell + emoji_split_element
+            # Split cell content by the delimiter and process each part
+            for element in item[key].split(self.multiline_delimiter):
+                fully_split_cell.extend(split_and_process_element(element))
 
-            multiline_row = []
-            single_row = []
-            item_prev_length = 0
-            spacing_between_items = 0
-            while len(fully_split_cell) > 0:
-                # check item length and adjust for presence of emoji
-                # only check the first element since we are using a stack
-                item_length = len(fully_split_cell[0]) + len(
-                    count_emojis(fully_split_cell[0])
-                )
+            multiline_row, single_row = [], []
+            item_prev_length, spacing_between_items = 0, 0
 
-                if (
-                    item_length
-                    + item_prev_length
-                    + spacing_between_items
-                    + self.padding_width
-                    <= self.var_padding[key]
-                ):
-                    # count just the items
+            # Create multiline rows from the split elements
+            while fully_split_cell:
+                current_element = fully_split_cell[0]
+                item_length = len(current_element) + len(count_emojis(current_element))
+
+                # Check if the current element fits in the row
+                if item_length + item_prev_length + spacing_between_items + self.padding_width <= self.var_padding[key]:
                     item_prev_length += item_length
-                    # add item to the current row
                     single_row.append(fully_split_cell.pop(0))
-                    # calculate the required spacing
                     spacing_between_items = len(single_row)
                 else:
+                    # Start a new line if the current element doesn't fit
                     multiline_row.append(" ".join(single_row))
-                    single_row = []
-                    # added element, clear buffer and spacing variable
-                    item_prev_length = 0
-                    spacing_between_items = 0
+                    single_row, item_prev_length, spacing_between_items = [], 0, 0
+
+            # Add the remaining elements in single_row to multiline_row
             multiline_row.append(" ".join(single_row))
             multiline_items[key] = multiline_row
 
-        # get the max row count in the multiline item
+        # Find the maximum number of rows in any column
         multiline_rows_max = max(map(len, multiline_items.values()))
 
-        # fill in blank values for multiline rows below this maximum
+        # Pad columns with fewer rows to ensure all columns have the same number of rows
         for key, value in multiline_items.items():
-            if len(value) < multiline_rows_max:
-                for _ in range(len(value), multiline_rows_max):
-                    value.append(self.padding_char * self.var_padding[key])
+            value.extend([self.padding_char * self.var_padding[key]] * (multiline_rows_max - len(value)))
 
-        # since we are rendering a single row over multiple columns
-        # access the multiline_rows dictionary by index rather than key
         rows = ""
-        for i in range(0, multiline_rows_max):
-            row_dict = {}
-            for key in self.data[0].keys():
-                row_dict[key] = multiline_items[key][i]
+        # Create the final output by combining rows from each column
+        for i in range(multiline_rows_max):
+            row_dict = {key: multiline_items[key][i] for key in self.data[0].keys()}
             rows += self.__get_normal_row(row_dict)
             if i < multiline_rows_max - 1:
                 rows += self.newline_char
         return rows
+
 
     def get_header(self):
         """Get the header of the markdown table"""
@@ -442,7 +339,7 @@ class markdown_table:  # pylint: disable=C0103,R0902
         # if header is set to be multirow
         if self.multiline and self.multiline_strategy in ["header", "rows_and_header"]:
             # invert keys with values, so that we can reuse the multiline row function
-            inv_data = {k: k for k, v in self.data[0].items()}
+            inv_data = {k: k for k, _ in self.data[0].items()}
             header += self.__get_multiline_row(inv_data)
             header += self.newline_char
         # else header is not rendered as multiple rows
@@ -476,38 +373,8 @@ class markdown_table:  # pylint: disable=C0103,R0902
 
     def get_markdown(self):
         """Get the complete markdown table"""
-        self.__validate_data()
         self.__update_meta_params()
         data = self.get_header() + self.get_body()
         if self.quote:
             return "```" + data + "```"
         return data
-
-    # backwards compatibility
-    def getHeader(self):  # pylint: disable=C0116,C0103
-        warnings.warn(
-            "the getHeader() function will be deprecated soon. Please use get_header() instead",
-            DeprecationWarning,
-        )
-        return self.get_header()
-
-    def getBody(self):  # pylint: disable=C0116,C0103
-        warnings.warn(
-            "the getBody() function will be deprecated soon. Please use get_body() instead",
-            DeprecationWarning,
-        )
-        return self.get_body()
-
-    def getMarkdown(self):  # pylint: disable=C0116,C0103
-        warnings.warn(
-            "the getMarkdown() function will be deprecated soon. Please use get_markdown() instead",
-            DeprecationWarning,
-        )
-        return self.get_markdown()
-
-    def setParams(self, **keywords):  # pylint: disable=C0116,C0103
-        warnings.warn(
-            "the setParams() function will be deprecated soon. Please use set_params() instead",
-            DeprecationWarning,
-        )
-        return self.set_params(**keywords)
