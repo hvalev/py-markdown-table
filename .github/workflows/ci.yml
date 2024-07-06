@@ -22,10 +22,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install pipx
+        run: |      
+          sudo apt update
+          sudo apt install pipx
+          pipx ensurepath
+          sudo pipx ensurepath --global
+
       - name: Install Poetry
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          source $HOME/.local/bin
+          pipx install poetry
 
       - name: Install dependencies
         run: |
