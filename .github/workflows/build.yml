@@ -42,7 +42,7 @@ jobs:
         run: |
           poetry run ruff check .
 
-      - name: Test with pytest and coverage
+      - name: Test with pytest
         run: |
           poetry run pytest .
 
@@ -81,4 +81,4 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          fail_ci_if_error: true
+          fail_ci_if_error: false
