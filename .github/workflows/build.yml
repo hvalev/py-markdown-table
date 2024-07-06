@@ -23,10 +23,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install pipx
+        run: |      
+          sudo apt update
+          sudo apt install pipx
+          pipx ensurepath
+          sudo pipx ensurepath --global
+
       - name: Install Poetry
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          source $HOME/.poetry/env
+          pipx install poetry
 
       - name: Install dependencies
         run: |
@@ -38,12 +44,8 @@ jobs:
 
       - name: Test with pytest and coverage
         run: |
-          poetry run pytest --cov=./py_markdown_table/ --cov-report=xml
+          poetry run pytest .
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          fail_ci_if_error: true
 
   build-and-publish:
     name: Build and Publish
@@ -71,3 +73,12 @@ jobs:
         run: |
           poetry build
           poetry publish --username __token__ --password ${{ secrets.pypi_token }}
+
+      - name: Test with pytest and coverage
+        run: |
+          poetry run pytest --cov=./py_markdown_table/ --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true
