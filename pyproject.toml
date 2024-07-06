@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "py-markdown-table"
+version = "1.0.0"
+description = "Package that generates markdown tables from a list of dicts"
+readme = "README.md"
+homepage = "https://github.com/hvalev/py-markdown-table"
+license = "MIT"
+authors = ["hvalev"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.5"
+pytest = "^7.0"
+pytest-cov = "^5.0"
+
+[tool.ruff]
+lint.select = ["E", "F", "C", "N", "Q", "B"]
+lint.ignore = ["E501"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
