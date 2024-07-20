@@ -81,8 +81,8 @@ class markdown_table:  # noqa: N801
             `topbottom`: Separate the top (header) and bottom (last row) of the table.
             `markdown`: Separate only the header from the body.
             `None`: No row separators will be inserted. Defaults to "always". \n
-        `padding_width` (int, optional): Width of padding to allocate to all table cells. Defaults to `0`. \n
-        `padding_weight` (str, optional): Strategy for allocating padding within table cells. Possible values are:
+        `padding_width` (Union[int, Dict[str, int]], optional): Width of padding to allocate to all table cells. Defaults to `0`. Padding can also be assigned on a per-column level by passing the values as key-value pairs where the keys mirror the ones of the input data and values describe the padding for the specific column.\n
+        `padding_weight` (Union[str, Dict[str, str]], optional): Strategy for allocating padding within table cells. Padding weight can be assigned globally for the whole table as a string or per-column by passing the values as key-value pairs where the keys mirror the ones of the input data and values describe the padding weight for the specific column. Possible values are:
             `left`: Aligns the cell's contents to the end of the cell.
             `right`: Aligns the cell's contents to the beginning of the cell.
             `centerleft`: Centers cell's contents with extra padding allocated to the beginning of the cell.
@@ -90,13 +90,13 @@ class markdown_table:  # noqa: N801
             Defaults to `centerleft`. \n
         `padding_char` (str, optional): Single character used to fill padding. Default is a blank space ` `. \n
         `newline_char` (str, optional): Character appended to each row to force a newline. Default is `\\n`. \n
-        `float_rounding` (Optional[int], optional): Integer denoting the precision of cells with `float` values after the decimal point. 
+        `float_rounding` (int, optional): Integer denoting the precision of cells with `float` values after the decimal point. 
             Default is `None`. \n
-        `emoji_spacing` (Optional[str], optional): Strategy for rendering emojis in tables. 
+        `emoji_spacing` (str, optional): Strategy for rendering emojis in tables. 
             `mono` will emojis as single characters, suitable for monospaced fonts.
             `None` will not detect and process emojis. 
             Default is `None`. \n
-        `multiline` (Optional[Dict[str, int]], optional): Renders the table with predefined widths by passing a dictionary with column names as keys and their respective widths as values. Note that the width of a column cannot be smaller than the longest contiguous string present in the data.
+        `multiline` (Dict[str, int], optional): Renders the table with predefined widths by passing a dictionary with column names as keys and their respective widths as values. Note that the width of a column cannot be smaller than the longest contiguous string present in the data.
             Default is `None`. \n
         `multiline_strategy` (str, optional): Strategy applied to rendering contents in multiple lines. Possible values are:
             `rows`: Splits only rows overfilling the predefined column width.
