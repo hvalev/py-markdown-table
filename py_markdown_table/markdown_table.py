@@ -144,7 +144,7 @@ class markdown_table:  # noqa: N801
         self.var_row_sep = self.__get_row_sep_str()
         self.var_row_sep_last = self.__get_row_sep_last()
 
-    def __validate_parameters(self):
+    def __validate_parameters(self): # noqa: C901
         valid_values = {
             "row_sep": ["always", "topbottom", "markdown", None],
             "emoji_spacing": ["mono", None],
@@ -155,39 +155,47 @@ class markdown_table:  # noqa: N801
             "padding_weight": ["left", "right", "centerleft", "centerright"],
         }
 
+        # Validate fixed value attributes
         for attr, values in valid_values.items():
             if getattr(self, attr) not in values:
                 raise ValueError(f"{attr} value of '{getattr(self, attr)}' is not valid. Possible values are {values}.")
-            
+
+        # Validate padding_weight
         if isinstance(self.padding_weight, dict):
-            for attr, values in valid_dict_values.items():
-                for key, value in dict(getattr(self, attr)).items():
-                    if value not in values:
-                        raise ValueError(f"padding_weight[{key}] value of '{value}' is not valid. Possible values are {values}.")
+            for key, value in self.padding_weight.items():
+                if value not in valid_dict_values["padding_weight"]:
+                    raise ValueError(f"padding_weight[{key}] value of '{value}' is not valid. Possible values are {valid_dict_values['padding_weight']}.")
         else:
             raise ValueError(f"padding_weight value of '{self.padding_weight}' is not valid.")
 
+        # Validate padding_width
         if isinstance(self.padding_width, dict):
             for key, value in self.padding_width.items():
-                if not isinstance(value, int) and (value < 0 and value > 100000):
-                    raise ValueError(f"padding_width[{key}] value of '{value}' is not valid. Possible ranges of values are 0 < and > 100000.")
+                if not isinstance(value, int) or not (0 <= value < 100000):
+                    raise ValueError(f"padding_width[{key}] value of '{value}' is not valid. Possible range is 0 <= value < 100000.")
         else:
             raise ValueError(f"padding_width value of '{self.padding_width}' is not valid.")
 
-        if not isinstance(self.padding_char, (str, dict)) or len(self.padding_char) != 1:
+        # Validate padding_char
+        if not isinstance(self.padding_char, (str, dict)) or (isinstance(self.padding_char, str) and len(self.padding_char) != 1):
             raise ValueError(f"padding_char value of '{self.padding_char}' is not valid. Please use a single character string.")
 
+        # Validate float_rounding
         if not isinstance(self.float_rounding, (type(None), int)):
             raise ValueError(f"float_rounding value of '{self.float_rounding}' is not valid. Please use an integer or leave as None.")
 
+        # Validate multiline
         if not isinstance(self.multiline, (type(None), dict)):
             raise ValueError(f"multiline value of '{self.multiline}' is not valid. Please use a dict or leave as None.")
 
+        # Validate multiline_delimiter
         if not isinstance(self.multiline_delimiter, str) or len(self.multiline_delimiter) != 1:
             raise ValueError(f"multiline_delimiter value of '{self.multiline_delimiter}' is not valid. Please use a single character string.")
 
+        # Validate quote
         if not isinstance(self.quote, bool):
             raise ValueError(f"quote value of '{self.quote}' is not valid. Please use a boolean.")
+
 
 
     def __validate_data(self, data):
