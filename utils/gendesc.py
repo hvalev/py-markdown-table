@@ -1,6 +1,6 @@
 # pylint: skip-file
 # flake8 noqa: E501
-from markdownTable import markdownTable
+from py_markdown_table.markdown_table import markdown_table
 
 # [monospaced fonts](https://en.wikipedia.org/wiki/Monospaced_font)
 params = [
@@ -31,15 +31,15 @@ params = [
     },
     {
         "param": "padding_width",
-        "type": "int",
+        "type": "int or dict<str,int>",
         "values": "",
-        "description": "Allocate padding to all table cells",
+        "description": "Allocate padding to all table cells when passing an int or per-column when passing a dict",
     },
     {
         "param": "padding_weight",
-        "type": "str",
+        "type": "str or dict<str,str>",
         "values": "",
-        "description": "Strategy for allocating padding within table cells",
+        "description": "Strategy for allocating padding within table cells. Per-column when passing a dict",
     },
     {
         "param": "",
@@ -137,13 +137,13 @@ params = [
 widths = {"param": 19, "type": 17, "values": 15, "description": 28}
 
 print(
-    markdownTable(params)
-    .setParams(
+    markdown_table(params)
+    .set_params(
         padding_char=" ",
         padding_weight="centerleft",
         padding_width=2,
         row_sep="always",
         multiline=widths,
     )
-    .getMarkdown()
+    .get_markdown()
 )
