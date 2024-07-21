@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py-markdown-table"
-version = "1.0.0"
+version = "1.1.0"
 description = "Package that generates markdown tables from a list of dicts"
 readme = "README.md"
 homepage = "https://github.com/hvalev/py-markdown-table"
