@@ -103,11 +103,13 @@ To add parameters to how the markdown table is formatted, you can use the `set_p
 |                       |                     |        None       |    No row separators will be   |
 |                       |                     |                   |            inserted            |
 +-----------------------+---------------------+-------------------+--------------------------------+
-|     padding_width     |         int         |                   |  Allocate padding to all table |
-|                       |                     |                   |              cells             |
+|     padding_width     |        int or       |                   |  Allocate padding to all table |
+|                       |    dict<str,int>    |                   |  cells when passing an int or  |
+|                       |                     |                   | per-column when passing a dict |
 +-----------------------+---------------------+-------------------+--------------------------------+
-|     padding_weight    |         str         |                   |     Strategy for allocating    |
-|                       |                     |                   |   padding within table cells   |
+|     padding_weight    |        str or       |                   |     Strategy for allocating    |
+|                       |    dict<str,str>    |                   |   padding within table cells.  |
+|                       |                     |                   | Per-column when passing a dict |
 +-----------------------+---------------------+-------------------+--------------------------------+
 |                       |                     |        left       |  Aligns the cell's contents to |
 |                       |                     |                   |       the end of the cell      |
@@ -337,6 +339,79 @@ markdown_table(data).set_params(row_sep = 'always', padding_width = 5, padding_w
 +-----------------+----------------+--------------+----------+
 |..Vrij Zwemmen...|..13:15-14:15...|..Sat 12.12...|..18/18...|
 +------------------------------------------------------------+
+```
+</details>
+<br/>
+
+```python
+markdown_table(data).set_params(row_sep = 'always', padding_width = 5, padding_weight = 'centerright', padding_char = '.').get_markdown()
+```
+<details>
+    <summary >
+    see example
+    </summary>
+
+```
++------------------------------------------------------------+
+|......title......|......time......|.....date.....|..seats...|
++-----------------+----------------+--------------+----------+
+|..Vrij Zwemmen...|..21:30-23:00...|..Wed 09.12...|..24/24...|
++-----------------+----------------+--------------+----------+
+|..Vrij Zwemmen...|..12:00-13:00...|..Thu 10.12...|..18/18...|
++-----------------+----------------+--------------+----------+
+|..Vrij zwemmen...|...7:30-8:30....|..Fri 11.12...|..18/18...|
++-----------------+----------------+--------------+----------+
+|..Vrij Zwemmen...|..13:15-14:15...|..Sat 12.12...|..18/18...|
++------------------------------------------------------------+
+```
+</details>
+<br/>
+
+### Per-column padding and padding weight
+```python
+markdown_table(data).set_params(row_sep = 'always', padding_width = {"title": 2, "time": 4, "date": 3, "seats": 1}, padding_weight = {"title": "left", "time": "right", "date": "centerleft", "seats": "centerright"}).get_markdown()
+
+```
+<details>
+    <summary >
+    see example
+    </summary>
+
+```
++--------------------------------------------------+
+|         title|time           |    date    |seats |
++--------------+---------------+------------+------+
+|  Vrij Zwemmen|21:30-23:00    |  Wed 09.12 |24/24 |
++--------------+---------------+------------+------+
+|  Vrij Zwemmen|12:00-13:00    |  Thu 10.12 |18/18 |
++--------------+---------------+------------+------+
+|  Vrij Zwemmen|7:30-8:30      |  Fri 11.12 |18/18 |
++--------------+---------------+------------+------+
+|  Vrij Zwemmen|13:15-14:15    |  Sat 12.12 |18/18 |
++--------------------------------------------------+
+```
+</details>
+<br/>
+
+
+```python
+markdown_table(data).set_params(row_sep = 'always', padding_width = {"A": 2, "B": 4, "C": 3}, padding_weight = {"A": "left", "B": "right", "C": "centerleft"}).get_markdown()
+```
+<details>
+    <summary >
+    see example
+    </summary>
+
+```
++-----------------------------------------------------------------------+
+|                            A|B                              |    C    |
++-----------------------------+-------------------------------+---------+
+|  row1_A and additional stuff|row1_B                         |  row1_C |
++-----------------------------+-------------------------------+---------+
+|                       row2_A|row2_B and additional stuff    |  row2_C |
++-----------------------------+-------------------------------+---------+
+|                       row3_A|row3_B                         |  row3_C |
++-----------------------------------------------------------------------+
 ```
 </details>
 <br/>
