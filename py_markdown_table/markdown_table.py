@@ -284,6 +284,9 @@ class markdown_table:  # noqa: N801
             for key in self.data[0].keys():
                 if len(item[key]) > self.var_padding[key]:
                     multiline = True
+                if '\n' in item[key]:
+                    multiline = True
+
             if multiline:
                 return self.__get_multiline_row(item)
             return self.__get_normal_row(item)
