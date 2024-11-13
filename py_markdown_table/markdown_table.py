@@ -51,13 +51,21 @@ class markdown_table:  # noqa: N801
         self.multiline_strategy = "rows"
         self.multiline_delimiter = " "
         self.quote = True
-
-        if not skip_data_validation:
-            self.__validate_data(data)
+        self.skip_data_validation = skip_data_validation
 
         self.__validate_parameters()
-        self.__update_meta_params()
         
+        if not self.skip_data_validation:
+            self.__validate_data(data)
+
+        self.__update_meta_params()
+
+        # we need to first update the meta_params for cell width, padding etc
+        # prior to checking whether the data will fit for multiline rendering
+        if self.multiline:
+            self.__validate_multiline(self.data)
+        
+
     def set_params(
         self,
         row_sep: str = "always",
@@ -128,8 +136,17 @@ class markdown_table:  # noqa: N801
         if isinstance(padding_weight, str):
             self.padding_weight = {key: padding_weight for key in self.data[0].keys()}
 
+        
         self.__validate_parameters()
+        
+        if not self.skip_data_validation:
+            self.__validate_data(self.data)
+
         self.__update_meta_params()
+        
+        if self.multiline:
+            self.__validate_multiline(self.data)
+
         return self
 
     def __update_meta_params(self):
@@ -142,7 +159,8 @@ class markdown_table:  # noqa: N801
         else:
             self.var_padding = self.__get_padding()
         self.var_row_sep = self.__get_row_sep_str()
-        self.var_row_sep_last = self.__get_row_sep_last()
+        # self.var_row_sep_last = self.__get_row_sep_last()
+        self.var_row_sep_last = self.__get_row_sep_str()
 
     def __validate_parameters(self): # noqa: C901
         valid_values = {
@@ -196,30 +214,32 @@ class markdown_table:  # noqa: N801
         if not isinstance(self.quote, bool):
             raise ValueError(f"quote value of '{self.quote}' is not valid. Please use a boolean.")
 
-
-
     def __validate_data(self, data):
         # Check if all dictionaries in self.data have uniform keys
-        keys = set(data[0].keys())  # Use set for fast lookup
+        keys = set(data[0].keys())
         for item in data:
             if not isinstance(item, dict):
                 raise TypeError("Each element in data must be a dictionary.")
             if set(item.keys()) != keys:
                 raise ValueError("Dictionary keys are not uniform across data variable.")
 
-        if self.multiline:
-            for row in data:
-                for key in row.keys():
-                    if key in self.var_padding:
-                        multiline_data = row[key].split(self.multiline_delimiter)
-                        multiline_max_width = max(multiline_data, key=len)
-                        if len(multiline_max_width) + self.padding_width[key] > self.var_padding[key]:
-                            raise ValueError(
-                                f"Contiguous string exists longer than the allocated column width "
-                                f"for column '{key}' and padding_width '{self.padding_width[key]}'."
-                            )
-                    else:
-                        raise KeyError(f"Key '{key}' not found in var_padding.")
+    def __validate_multiline(self, data):
+        for i, row in enumerate(data):
+            for key in row.keys():
+                if key in self.var_padding:
+                    multiline_data = row[key].split(self.multiline_delimiter)
+                    multiline_max_string = max(multiline_data, key=len)
+                    multiline_max_width = len(multiline_max_string)
+                    if multiline_max_width + self.padding_width[key] > self.var_padding[key]:
+                        raise ValueError(
+                            f"There is a contiguous string:\n"
+                            f"'{multiline_max_string}'\n"
+                            f"in the element [{i}] "
+                            f"which is longer than the allocated column width "
+                            f"for column '{key}' and padding_width '{self.padding_width[key]}'."
+                        )
+                else:
+                    raise KeyError(f"Key '{key}' not found in var_padding.")
 
     def __get_padding(self):
         """Calculate table-wide padding."""
@@ -249,13 +269,6 @@ class markdown_table:  # noqa: N801
         row_sep_str += "+"
         return row_sep_str
 
-    def __get_row_sep_last(self):
-        row_sep_str_last = "+"
-        for value in self.var_padding.values():
-            row_sep_str_last += "-" * (value + 1)
-        row_sep_str_last = row_sep_str_last[:-1] + "+"
-        return row_sep_str_last
-
     def __get_margin(self, margin, key):
         # get column-specific alignment based on the column key (header)
         if self.padding_weight[key] == "left":
@@ -278,6 +291,9 @@ class markdown_table:  # noqa: N801
             for key in self.data[0].keys():
                 if len(item[key]) > self.var_padding[key]:
                     multiline = True
+                if "\n" in item[key]:
+                    multiline = True
+
             if multiline:
                 return self.__get_multiline_row(item)
             return self.__get_normal_row(item)
@@ -302,7 +318,7 @@ class markdown_table:  # noqa: N801
         row += "|"
         return row
 
-    def __get_multiline_row(self, item):
+    def __get_multiline_row(self, item): # noqa: C901
         multiline_items = {}
 
         # Helper function to process each element and split by emojis if present
@@ -315,31 +331,35 @@ class markdown_table:  # noqa: N801
 
         # Process each column in the row
         for key in self.data[0].keys():
-            fully_split_cell = []
-            # Split cell content by the delimiter and process each part
-            for element in item[key].split(self.multiline_delimiter):
-                fully_split_cell.extend(split_and_process_element(element))
+            multiline_row = []
+            # First we split by embedded line breaks in order to correctly
+            # render lists and othe markdown elements which depend on newline offset
+            for line in item[key].split("\n"):
+                fully_split_cell = []
+                # Split cell content by the delimiter and process each part
+                for element in line.split(self.multiline_delimiter):
+                    fully_split_cell.extend(split_and_process_element(element))
 
-            multiline_row, single_row = [], []
-            item_prev_length, spacing_between_items = 0, 0
+                single_row = []
+                item_prev_length, spacing_between_items = 0, 0
 
-            # Create multiline rows from the split elements
-            while fully_split_cell:
-                current_element = fully_split_cell[0]
-                item_length = len(current_element) + len(count_emojis(current_element))
+                # Create multiline rows from the split elements
+                while fully_split_cell:
+                    current_element = fully_split_cell[0]
+                    item_length = len(current_element) + len(count_emojis(current_element))
 
-                # Check if the current element fits in the row
-                if item_length + item_prev_length + spacing_between_items + self.padding_width[key] <= self.var_padding[key]:
-                    item_prev_length += item_length
-                    single_row.append(fully_split_cell.pop(0))
-                    spacing_between_items = len(single_row)
-                else:
-                    # Start a new line if the current element doesn't fit
-                    multiline_row.append(" ".join(single_row))
-                    single_row, item_prev_length, spacing_between_items = [], 0, 0
+                    # Check if the current element fits in the row
+                    if item_length + item_prev_length + spacing_between_items + self.padding_width[key] <= self.var_padding[key]:
+                        item_prev_length += item_length
+                        single_row.append(fully_split_cell.pop(0))
+                        spacing_between_items = len(single_row)
+                    else:
+                        # Start a new line if the current element doesn't fit
+                        multiline_row.append(" ".join(single_row))
+                        single_row, item_prev_length, spacing_between_items = [], 0, 0
 
-            # Add the remaining elements in single_row to multiline_row
-            multiline_row.append(" ".join(single_row))
+                # Add the remaining elements in single_row to multiline_row
+                multiline_row.append(" ".join(single_row))
             multiline_items[key] = multiline_row
 
         # Find the maximum number of rows in any column
