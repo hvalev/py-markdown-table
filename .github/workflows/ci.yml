@@ -5,6 +5,11 @@ on:
       - 'README.md'
     branches:
       - '**'
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+    branches:
+      - '**'
 
 jobs:
   test:
