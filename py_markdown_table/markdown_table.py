@@ -53,11 +53,18 @@ class markdown_table:  # noqa: N801
         self.quote = True
         self.skip_data_validation = skip_data_validation
 
-        self.__update_meta_params()
         self.__validate_parameters()
-
-        if not skip_data_validation:
+        
+        if not self.skip_data_validation:
             self.__validate_data(data)
+
+        self.__update_meta_params()
+
+        # we need to first update the meta_params for cell width, padding etc
+        # prior to checking whether the data will fit for multiline rendering
+        if self.multiline:
+            self.__validate_multiline(self.data)
+        
 
     def set_params(
         self,
@@ -129,10 +136,16 @@ class markdown_table:  # noqa: N801
         if isinstance(padding_weight, str):
             self.padding_weight = {key: padding_weight for key in self.data[0].keys()}
 
-        self.__update_meta_params()
+        
         self.__validate_parameters()
+        
         if not self.skip_data_validation:
             self.__validate_data(self.data)
+
+        self.__update_meta_params()
+        
+        if self.multiline:
+            self.__validate_multiline(self.data)
 
         return self
 
@@ -203,29 +216,30 @@ class markdown_table:  # noqa: N801
 
     def __validate_data(self, data):
         # Check if all dictionaries in self.data have uniform keys
-        keys = set(data[0].keys())  # Use set for fast lookup
+        keys = set(data[0].keys())
         for item in data:
             if not isinstance(item, dict):
                 raise TypeError("Each element in data must be a dictionary.")
             if set(item.keys()) != keys:
                 raise ValueError("Dictionary keys are not uniform across data variable.")
 
-        if self.multiline:
-            for i, row in enumerate(data):
-                for key in row.keys():
-                    if key in self.var_padding:
-                        multiline_data = row[key].split(self.multiline_delimiter)
-                        multiline_max_width = max(multiline_data, key=len)
-                        if len(multiline_max_width) + self.padding_width[key] > self.var_padding[key]:
-                            raise ValueError(
-                                f"There is a contiguous string:\n"
-                                f"'{multiline_max_width}'\n"
-                                f"in the element [{i}] "
-                                f"which is longer than the allocated column width "
-                                f"for column '{key}' and padding_width '{self.padding_width[key]}'."
-                            )
-                    else:
-                        raise KeyError(f"Key '{key}' not found in var_padding.")
+    def __validate_multiline(self, data):
+        for i, row in enumerate(data):
+            for key in row.keys():
+                if key in self.var_padding:
+                    multiline_data = row[key].split(self.multiline_delimiter)
+                    multiline_max_string = max(multiline_data, key=len)
+                    multiline_max_width = len(multiline_max_string)
+                    if multiline_max_width + self.padding_width[key] > self.var_padding[key]:
+                        raise ValueError(
+                            f"There is a contiguous string:\n"
+                            f"'{multiline_max_string}'\n"
+                            f"in the element [{i}] "
+                            f"which is longer than the allocated column width "
+                            f"for column '{key}' and padding_width '{self.padding_width[key]}'."
+                        )
+                else:
+                    raise KeyError(f"Key '{key}' not found in var_padding.")
 
     def __get_padding(self):
         """Calculate table-wide padding."""
@@ -255,13 +269,6 @@ class markdown_table:  # noqa: N801
         row_sep_str += "+"
         return row_sep_str
 
-    def __get_row_sep_last(self):
-        row_sep_str_last = "+"
-        for value in self.var_padding.values():
-            row_sep_str_last += "-" * (value + 1)
-        row_sep_str_last = row_sep_str_last[:-1] + "+"
-        return row_sep_str_last
-
     def __get_margin(self, margin, key):
         # get column-specific alignment based on the column key (header)
         if self.padding_weight[key] == "left":
@@ -284,7 +291,7 @@ class markdown_table:  # noqa: N801
             for key in self.data[0].keys():
                 if len(item[key]) > self.var_padding[key]:
                     multiline = True
-                if '\n' in item[key]:
+                if "\n" in item[key]:
                     multiline = True
 
             if multiline:
@@ -311,7 +318,7 @@ class markdown_table:  # noqa: N801
         row += "|"
         return row
 
-    def __get_multiline_row(self, item):
+    def __get_multiline_row(self, item): # noqa: C901
         multiline_items = {}
 
         # Helper function to process each element and split by emojis if present
