@@ -1,50 +1,46 @@
 """Util functions which may be used outside of the class for convenience"""
 from typing import List, Dict
 
-
-# Helper functions
 def count_emojis(text: str) -> List[Dict]:
-    """Count emojis in a given string and return a list of emojis with index, value, and spacing.
-
-    Args:
-        text (str): input string to parse for emojis
-
-    Returns:
-        List<Dict>: List of Dicts containing the index, content and spacing of
-                    emojis found in the input string.
-    """
-
+    """Count emojis in a given string and return a list of emojis with index, value, and spacing."""
+    
     emoji_ranges = [
         (0x1F600, 0x1F64F),  # Emoticons
         (0x1F300, 0x1F5FF),  # Miscellaneous Symbols and Pictographs
         (0x1F680, 0x1F6FF),  # Transport and Map Symbols
-        (0x2600, 0x26FF),  # Miscellaneous Symbols
-        (0x2700, 0x27BF),  # Dingbats
-        (0xFE00, 0xFE0F),  # Variation Selectors
+        (0x2600, 0x26FF),    # Miscellaneous Symbols
+        (0x2700, 0x27BF),    # Dingbats
+        (0xFE00, 0xFE0F),    # Variation Selectors
         (0x1F900, 0x1F9FF),  # Supplemental Symbols and Pictographs
         (0x1F1E6, 0x1F1FF),  # Flags (iOS)
+        (0x1F7E0, 0x1F7FF),  # Geometric Shapes Extended (🔴🟢)
+        (0x2B00, 0x2BFF),    # Additional geometric symbols (⬛⬜)
+        (0x2190, 0x21FF),    # Arrows (➡️ ⬆️ ⬇️ ⬅️)
+        (0x1FA70, 0x1FAFF),  # Extended symbols (🛗 🛻 🪐 🪑)
     ]
 
     emojis = []
 
     for i, char in enumerate(text):
-        if any(start <= ord(char) <= end for start, end in emoji_ranges):
-            emoji_info = {"index": i, "value": char, "spacing": 2}
-            emojis.append(emoji_info)
-        # Check if the current character is a surrogate pair
+        code_point = ord(char)
+
+        # Check if character is in an emoji range
+        if any(start <= code_point <= end for start, end in emoji_ranges):
+            emojis.append({"index": i, "value": char, "spacing": 2})
+
+        # Handle surrogate pairs
         if (
             i + 1 < len(text)
-            and ord(char) >= 0xD800
-            and ord(char) <= 0xDBFF
-            and ord(text[i + 1]) >= 0xDC00
-            and ord(text[i + 1]) <= 0xDFFF
+            and 0xD800 <= code_point <= 0xDBFF
+            and 0xDC00 <= ord(text[i + 1]) <= 0xDFFF
         ):
-            code_point = (
-                0x10000 + (ord(char) - 0xD800) * 0x400 + (ord(text[i + 1]) - 0xDC00)
-            )
-            if any(start <= code_point <= end for start, end in emoji_ranges):
-                emoji_info = {"index": i, "value": char + text[i + 1], "spacing": 2}
-                emojis.append(emoji_info)
+            full_code_point = 0x10000 + (code_point - 0xD800) * 0x400 + (ord(text[i + 1]) - 0xDC00)
+            if any(start <= full_code_point <= end for start, end in emoji_ranges):
+                emojis.append({"index": i, "value": char + text[i + 1], "spacing": 2})
+
+        # Handle keycap sequences (1️⃣ 2️⃣ 3️⃣ #️⃣)
+        if i + 1 < len(text) and ord(text[i + 1]) == 0x20E3:
+            emojis.append({"index": i, "value": char + text[i + 1], "spacing": 2})
 
     return emojis
 
