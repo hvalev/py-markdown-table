@@ -14,38 +14,26 @@ on:
 jobs:
   test:
     name: Test with different Python versions
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
+      # keep the other versions running so one red leg does not hide the rest
+      fail-fast: false
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13"]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+        uses: astral-sh/setup-uv@v10.3.0
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install pipx
-        run: |      
-          sudo apt update
-          sudo apt install pipx
-          pipx ensurepath
-          sudo pipx ensurepath --global
-
-      - name: Install Poetry
-        run: |
-          pipx install poetry
-
       - name: Install dependencies
-        run: |
-          poetry install
+        run: uv sync --frozen
 
       - name: Test with ruff
-        run: |
-          poetry run ruff check .
+        run: uv run ruff check .
 
       - name: Test with pytest
-        run: |
-          poetry run pytest .
+        run: uv run pytest
