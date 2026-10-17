@@ -15,19 +15,11 @@ jobs:
   test:
     name: Test with different Python versions
     runs-on: ubuntu-24.04
-    # the 3.15 leg runs against a pre-release interpreter, so it reports
-    # without gating; see the matrix include entry below
-    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       # keep the other versions running so one red leg does not hide the rest
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
-        include:
-          # 3.15.0 is not final yet; uv resolves a bare 3.15 to the newest
-          # pre-release and later to the final release automatically
-          - python-version: '3.15'
-            experimental: true
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13', '3.14', '3.15']
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
