@@ -19,7 +19,7 @@ jobs:
       # keep the other versions running so one red leg does not hide the rest
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13', '3.14', '3.15']
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
