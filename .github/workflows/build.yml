@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-24.04
     # the 3.15 leg runs against a pre-release interpreter, so it reports
     # without gating; see the matrix include entry below
-    continue-on-error: ${{ matrix.experimental }}
+    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       fail-fast: false
       matrix:

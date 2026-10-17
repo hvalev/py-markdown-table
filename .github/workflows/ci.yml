@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-24.04
     # the 3.15 leg runs against a pre-release interpreter, so it reports
     # without gating; see the matrix include entry below
-    continue-on-error: ${{ matrix.experimental }}
+    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       # keep the other versions running so one red leg does not hide the rest
       fail-fast: false
