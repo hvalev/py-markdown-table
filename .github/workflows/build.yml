@@ -10,79 +10,48 @@ on:
 jobs:
   test:
     name: Test with different Python versions
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13"]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+        uses: astral-sh/setup-uv@v10.3.0
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install pipx
-        run: |      
-          sudo apt update
-          sudo apt install pipx
-          pipx ensurepath
-          sudo pipx ensurepath --global
-
-      - name: Install Poetry
-        run: |
-          pipx install poetry
-
       - name: Install dependencies
-        run: |
-          poetry install
+        run: uv sync --frozen
 
       - name: Test with ruff
-        run: |
-          poetry run ruff check .
+        run: uv run ruff check .
 
       - name: Test with pytest
-        run: |
-          poetry run pytest .
-
+        run: uv run pytest
 
   build-and-publish:
     name: Build and Publish
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v6
-        with:
-          python-version: 3.9
-
-      - name: Install pipx
-        run: |      
-          sudo apt update
-          sudo apt install pipx
-          pipx ensurepath
-          sudo pipx ensurepath --global
-
-      - name: Install Poetry
-        run: |
-          pipx install poetry
+      - name: Set up Python
+        uses: astral-sh/setup-uv@v10.3.0
 
       - name: Install dependencies
-        run: |
-          poetry install
+        run: uv sync --frozen
 
-      - name: Build and publish to pypi
-        uses: JRubics/poetry-publish@v2.1
-        with:
-          pypi_token: ${{ secrets.PYPI_PASSWORD }}
+      - name: Build sdist and wheel
+        run: uv build
 
       - name: Test with pytest and coverage
-        run: |
-          poetry run pytest --cov=./py_markdown_table/ --cov-report=xml
+        run: uv run pytest --cov=./py_markdown_table/ --cov-report=xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v7
@@ -90,3 +59,8 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           fail_ci_if_error: false
+
+      - name: Build and publish to pypi
+        uses: pypa/gh-action-pypi-publish@v1.14.2
+        with:
+          password: ${{ secrets.PYPI_PASSWORD }}

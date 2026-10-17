@@ -7,4 +7,5 @@ debug.log
 .vscode
 *coverage*
 .ruff_cache
-dist
+dist.venv
+dist/
