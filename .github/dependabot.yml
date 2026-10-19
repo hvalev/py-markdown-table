@@ -11,3 +11,9 @@ updates:
       interval: weekly
       day: saturday
     open-pull-requests-limit: 10
+  - package-ecosystem: uv
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: saturday
+    open-pull-requests-limit: 5
