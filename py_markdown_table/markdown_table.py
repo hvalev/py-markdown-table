@@ -41,8 +41,8 @@ class markdown_table:  # noqa: N801
 
         # set defaults
         self.row_sep = "always"
-        self.padding_width = {key: 0 for key in self.data[0].keys()}
-        self.padding_weight = {key: "centerleft" for key in self.data[0].keys()}
+        self.padding_width = dict.fromkeys(self.data[0].keys(), 0)
+        self.padding_weight = dict.fromkeys(self.data[0].keys(), "centerleft")
         self.padding_char = " "
         self.newline_char = "\n"
         self.float_rounding = None
@@ -132,9 +132,9 @@ class markdown_table:  # noqa: N801
         self.quote = quote
         
         if isinstance(padding_width, int):
-            self.padding_width = {key: padding_width for key in self.data[0].keys()}
+            self.padding_width = dict.fromkeys(self.data[0].keys(), padding_width)
         if isinstance(padding_weight, str):
-            self.padding_weight = {key: padding_weight for key in self.data[0].keys()}
+            self.padding_weight = dict.fromkeys(self.data[0].keys(), padding_weight)
 
         
         self.__validate_parameters()
