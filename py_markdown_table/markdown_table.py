@@ -37,7 +37,8 @@ class markdown_table:  # noqa: N801
             raise ValueError("data is not of type list or elements are not of type dict")
         if len(data) == 0:
             raise ValueError("Data variable contains no elements.")
-        self.data = data
+        # own copy: rendering must never write back into the caller's rows
+        self.data = [dict(row) for row in data]
 
         # set defaults
         self.row_sep = "always"
@@ -58,12 +59,14 @@ class markdown_table:  # noqa: N801
         if not self.skip_data_validation:
             self.__validate_data(data)
 
+        self.__validate_column_keys()
+        self.__prepare_cells()
         self.__update_meta_params()
 
         # we need to first update the meta_params for cell width, padding etc
         # prior to checking whether the data will fit for multiline rendering
         if self.multiline:
-            self.__validate_multiline(self.data)
+            self.__validate_multiline()
         
 
     def set_params(
@@ -142,20 +145,23 @@ class markdown_table:  # noqa: N801
         if not self.skip_data_validation:
             self.__validate_data(self.data)
 
+        self.__validate_column_keys()
+        self.__prepare_cells()
+
         self.__update_meta_params()
         
         if self.multiline:
-            self.__validate_multiline(self.data)
+            self.__validate_multiline()
 
         return self
 
     def __update_meta_params(self):
         """Update and store internal meta-parameters"""
         if self.multiline:
-            self.var_padding = self.multiline
-            # add user-defined padding to the provided multiline column width dict
-            for key, value in self.var_padding.items():
-                self.var_padding[key] = value + self.padding_width[key]
+            # copy, and add padding exactly once: assigning self.multiline here
+            # made every render widen the columns again and corrupted the
+            # dictionary the caller passed in
+            self.var_padding = {key: value + self.padding_width[key] for key, value in self.multiline.items()}
         else:
             self.var_padding = self.__get_padding()
         self.var_row_sep = self.__get_row_sep_str()
@@ -195,7 +201,7 @@ class markdown_table:  # noqa: N801
             raise ValueError(f"padding_width value of '{self.padding_width}' is not valid.")
 
         # Validate padding_char
-        if not isinstance(self.padding_char, (str, dict)) or (isinstance(self.padding_char, str) and len(self.padding_char) != 1):
+        if not isinstance(self.padding_char, str) or len(self.padding_char) != 1:
             raise ValueError(f"padding_char value of '{self.padding_char}' is not valid. Please use a single character string.")
 
         # Validate float_rounding
@@ -214,6 +220,37 @@ class markdown_table:  # noqa: N801
         if not isinstance(self.quote, bool):
             raise ValueError(f"quote value of '{self.quote}' is not valid. Please use a boolean.")
 
+    def __validate_column_keys(self):
+        """Per-column option dicts must cover exactly the table columns."""
+        columns = set(self.data[0].keys())
+        for name in ("padding_width", "padding_weight", "multiline"):
+            value = getattr(self, name)
+            if not isinstance(value, dict):
+                continue
+            unknown = sorted(set(value) - columns, key=str)
+            missing = sorted(columns - set(value), key=str)
+            if unknown:
+                raise ValueError(f"{name} contains key(s) that are not columns of the table: {unknown}. The columns are {sorted(columns, key=str)}.")
+            if missing:
+                raise ValueError(f"{name} has no value for column(s): {missing}. The columns are {sorted(columns, key=str)}.")
+
+    def __prepare_cells(self):
+        """Render every value to a string once, before any measuring.
+
+        Downstream code splits cells, scans them for emojis and takes their
+        length, so normalising here makes the plain, multiline and emoji paths
+        accept the same value types. Rounding happens here rather than while
+        measuring so that no caller data is ever written to.
+        """
+        self._cells = []
+        for row in self.data:
+            cell = {}
+            for key, value in row.items():
+                if self.float_rounding and isinstance(value, float):
+                    value = round(value, self.float_rounding)
+                cell[key] = str(value)
+            self._cells.append(cell)
+
     def __validate_data(self, data):
         # Check if all dictionaries in self.data have uniform keys
         keys = set(data[0].keys())
@@ -223,8 +260,8 @@ class markdown_table:  # noqa: N801
             if set(item.keys()) != keys:
                 raise ValueError("Dictionary keys are not uniform across data variable.")
 
-    def __validate_multiline(self, data):
-        for i, row in enumerate(data):
+    def __validate_multiline(self):
+        for i, row in enumerate(self._cells):
             for key in row.keys():
                 if key in self.var_padding:
                     multiline_data = row[key].split(self.multiline_delimiter)
@@ -242,24 +279,17 @@ class markdown_table:  # noqa: N801
                     raise KeyError(f"Key '{key}' not found in var_padding.")
 
     def __get_padding(self):
-        """Calculate table-wide padding."""
-        padding = {}
-        for item in self.data[0].keys():
-            padding[item] = len(item)
-        for item in self.data:
-            for key in item.keys():
-                if self.float_rounding and isinstance(item[key], float):
-                    item[key] = round(item[key], self.float_rounding)
-                # prepend float pre-processing
-                if (padding[key] - self.padding_width[key]) < len(str(item[key])):
-                    padding[key] = len(str(item[key])) + self.padding_width[key]
-                # prepend emoji pre-processing
-                emoji = []
+        """Calculate table-wide padding from the prepared cells."""
+        padding = {key: len(key) for key in self.data[0].keys()}
+        for row in self._cells:
+            for key, value in row.items():
+                # a monospace emoji occupies roughly twice the width of the
+                # single code point it is made of, so budget one extra column
+                width = len(value)
                 if self.emoji_spacing == "mono":
-                    emoji = count_emojis(item[key])
-                # adapt padding with all information
-                if padding[key] - self.padding_width[key] - len(emoji) < len(str(item[key])):
-                    padding[key] = len(str(item[key])) + self.padding_width[key] + len(emoji)
+                    width += len(count_emojis(value))
+                if padding[key] < width + self.padding_width[key]:
+                    padding[key] = width + self.padding_width[key]
         return padding
 
     def __get_row_sep_str(self):
@@ -410,7 +440,7 @@ class markdown_table:  # noqa: N801
     def get_body(self):
         """Get the body of the markdown table"""
         rows = ""
-        for i, item in enumerate(self.data):
+        for i, item in enumerate(self._cells):
             rows += self.__get_row(item)
             if i < len(self.data) - 1:
                 rows += self.newline_char
@@ -427,3 +457,7 @@ class markdown_table:  # noqa: N801
         if self.quote:
             return "```" + data + "```"
         return data
+
+# PEP 8 spelling kept as an alias; the lowercase name is what the README and
+# every existing caller use, so it stays the primary export.
+MarkdownTable = markdown_table
