@@ -6,7 +6,7 @@ readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "hvalev" }]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -18,8 +18,8 @@ Homepage = "https://github.com/hvalev/py-markdown-table"
 [dependency-groups]
 dev = [
     "ruff>=0.17,<0.18",
-    "pytest>=8.0,<9",
-    "pytest-cov>=5.0,<6",
+    "pytest>=9.0,<10",
+    "pytest-cov>=7.0,<8",
 ]
 
 [build-system]
