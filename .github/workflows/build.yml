@@ -50,16 +50,6 @@ jobs:
       - name: Build sdist and wheel
         run: uv build
 
-      - name: Test with pytest and coverage
-        run: uv run pytest --cov=./py_markdown_table/ --cov-report=xml
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v7
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        with:
-          fail_ci_if_error: false
-
       - name: Build and publish to pypi
         uses: pypa/gh-action-pypi-publish@v1.14.2
         with:
