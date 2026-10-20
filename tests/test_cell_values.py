@@ -37,3 +37,22 @@ def test_markdown_syntax_is_not_stripped_when_validation_is_skipped():
     cell = "a [link](http://example.com) and `code`"
     out = markdown_table([{"md": cell}], skip_data_validation=True).get_markdown()
     assert cell in out
+
+
+@pytest.mark.parametrize("break_char", ["\n", "\r\n", "\r"], ids=["lf", "crlf", "cr"])
+def test_a_line_break_wraps_a_multiline_column(break_char):
+    out = markdown_table([{"col": f"aaaa{break_char}bbbb"}]).set_params(multiline={"col": 20}).get_markdown()
+    assert "aaaa" in out and "bbbb" in out
+    assert len([line for line in out.split("\n") if "aaaa" in line or "bbbb" in line]) == 2
+
+
+@pytest.mark.parametrize("break_char", ["\n", "\r\n", "\r"], ids=["lf", "crlf", "cr"])
+def test_a_line_break_without_column_widths_is_refused(break_char):
+    """It used to be written straight through, splitting the row in two."""
+    with pytest.raises(ValueError, match="contains a line break"):
+        markdown_table([{"col": f"aaaa{break_char}bbbb"}]).get_markdown()
+
+
+def test_a_line_break_is_reported_with_its_column():
+    with pytest.raises(ValueError, match="'note'"):
+        markdown_table([{"note": "two\nlines"}]).get_markdown()
