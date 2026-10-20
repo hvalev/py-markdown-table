@@ -69,3 +69,12 @@ def test_a_column_name_wider_than_its_column_is_reported():
     too long for its column used to be rendered past the table border."""
     with pytest.raises(ValueError, match="column name 'longheader'"):
         markdown_table([{"longheader": "ab"}]).set_params(multiline={"longheader": 3})
+
+
+def test_a_word_starting_with_an_emoji_keeps_its_surroundings():
+    """An emoji at index 0 makes the splitter yield an empty piece; the word
+    must neither merge with the one before it nor split apart."""
+    out = markdown_table([{"col": "aa \U0001f600bb cc dd ee"}]).set_params(multiline={"col": 5}).get_markdown()
+    lines = [line for line in out.split("\n") if line.startswith("|")]
+    assert any("\U0001f600bb" in line for line in lines)
+    assert not any("aa\U0001f600bb" in line for line in lines)
