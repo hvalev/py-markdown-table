@@ -1,48 +1,41 @@
 """Util functions which may be used outside of the class for convenience"""
+import unicodedata
 from typing import List, Dict
 
+_EMOJI_PRESENTATION = "\ufe0f"
+
+
 def count_emojis(text: str) -> List[Dict]:
-    """Count emojis in a given string and return a list of emojis with index, value, and spacing."""
-    
-    emoji_ranges = [
-        (0x1F600, 0x1F64F),  # Emoticons
-        (0x1F300, 0x1F5FF),  # Miscellaneous Symbols and Pictographs
-        (0x1F680, 0x1F6FF),  # Transport and Map Symbols
-        (0x2600, 0x26FF),    # Miscellaneous Symbols
-        (0x2700, 0x27BF),    # Dingbats
-        (0xFE00, 0xFE0F),    # Variation Selectors
-        (0x1F900, 0x1F9FF),  # Supplemental Symbols and Pictographs
-        (0x1F1E6, 0x1F1FF),  # Flags (iOS)
-        (0x1F7E0, 0x1F7FF),  # Geometric Shapes Extended (🔴🟢)
-        (0x2B00, 0x2BFF),    # Additional geometric symbols (⬛⬜)
-        (0x2190, 0x21FF),    # Arrows (➡️ ⬆️ ⬇️ ⬅️)
-        (0x1FA70, 0x1FAFF),  # Extended symbols (🛗 🛻 🪐 🪑)
+    """Report the characters in a string that a monospace font draws two columns wide.
+
+    That covers emoji in emoji presentation and any other East Asian Wide
+    character, CJK among them, so a table of mixed script is padded correctly.
+    The widths come from `unicodedata`, which ships with python, so no external
+    dependency is involved.
+
+    Args:
+        text (str): the string to scan.
+
+    Returns:
+        List[Dict]: one entry per wide character, in order of appearance, with
+            its `index` in the string, its `value`, and the `spacing` it
+            occupies. Sequences assembled from several code points - flags,
+            keycaps, ZWJ sequences - yield one entry per code point, so their
+            width is over-estimated rather than silently too narrow.
+    """
+    return [
+        {"index": index, "value": char, "spacing": 2}
+        for index, char in enumerate(text)
+        if _is_double_width(text, index)
     ]
 
-    emojis = []
 
-    for i, char in enumerate(text):
-        code_point = ord(char)
-
-        # Check if character is in an emoji range
-        if any(start <= code_point <= end for start, end in emoji_ranges):
-            emojis.append({"index": i, "value": char, "spacing": 2})
-
-        # Handle surrogate pairs
-        if (
-            i + 1 < len(text)
-            and 0xD800 <= code_point <= 0xDBFF
-            and 0xDC00 <= ord(text[i + 1]) <= 0xDFFF
-        ):
-            full_code_point = 0x10000 + (code_point - 0xD800) * 0x400 + (ord(text[i + 1]) - 0xDC00)
-            if any(start <= full_code_point <= end for start, end in emoji_ranges):
-                emojis.append({"index": i, "value": char + text[i + 1], "spacing": 2})
-
-        # Handle keycap sequences (1️⃣ 2️⃣ 3️⃣ #️⃣)
-        if i + 1 < len(text) and ord(text[i + 1]) == 0x20E3:
-            emojis.append({"index": i, "value": char + text[i + 1], "spacing": 2})
-
-    return emojis
+def _is_double_width(text: str, index: int) -> bool:
+    if unicodedata.east_asian_width(text[index]) in ("W", "F"):
+        return True
+    # U+FE0F asks for emoji presentation, which is drawn two columns wide even
+    # when the base character on its own is not.
+    return index + 1 < len(text) and text[index + 1] == _EMOJI_PRESENTATION
 
 
 def find_longest_contiguous_strings(

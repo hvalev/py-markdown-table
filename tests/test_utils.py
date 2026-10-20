@@ -45,3 +45,21 @@ def test_find_longest_contiguous_strings_takes_the_longest_over_all_rows():
 )
 def test_split_list_by_indices(text, indices, expected):
     assert split_list_by_indices(text, indices) == expected
+
+
+def test_characters_that_are_not_wide_are_not_counted():
+    """The previous implementation carried its own table of code point ranges
+    and treated arrows, stars and check marks as two columns wide."""
+    assert count_emojis("a→b★c✓d☀e") == []
+    assert count_emojis("© ü 1") == []
+
+
+def test_wide_characters_outside_the_emoji_blocks_are_counted():
+    """CJK is two columns wide in a monospaced font too, and was missed."""
+    assert [entry["value"] for entry in count_emojis("日本語")] == ["日", "本", "語"]
+
+
+def test_a_variation_selector_widens_the_character_before_it():
+    """U+FE0F asks for emoji presentation; the selector itself takes no room."""
+    hearts = count_emojis("❤️ ok")
+    assert [entry["index"] for entry in hearts] == [0]
