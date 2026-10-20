@@ -52,6 +52,7 @@ class markdown_table:  # noqa: N801
         self.multiline_strategy = "rows"
         self.multiline_delimiter = " "
         self.quote = True
+        self.compact = False
         self.skip_data_validation = skip_data_validation
 
         self.__validate_parameters()
@@ -82,6 +83,7 @@ class markdown_table:  # noqa: N801
         multiline_strategy: str = "rows",
         multiline_delimiter: str = " ",
         quote: bool = True,
+        compact: bool = False,
     ):
         """
         Setter function for markdown table rendering parameters.
@@ -117,7 +119,9 @@ class markdown_table:  # noqa: N801
         `multiline_delimiter` (str, optional): Character that will be used to split a cell's contents into multiple rows.
             Default is a blank space ` `. \n
         `quote` (bool, optional): Wraps the generated markdown table in block quotes ` ```table``` `. 
-            Default is `True`.
+            Default is `True`. 
+
+        `compact` (bool, optional): Emit the smallest table that is still valid markdown: cells are not padded and the header separator is a single `-` per column. Only meaningful when the renderer draws the table, so it requires `row_sep` `markdown`. Widths given to `multiline` are still honoured, they just no longer add padding. Default is `False`.
 
         Returns:
             self: Returns the instance with updated parameters.
@@ -133,6 +137,7 @@ class markdown_table:  # noqa: N801
         self.multiline_strategy = multiline_strategy
         self.multiline_delimiter = multiline_delimiter
         self.quote = quote
+        self.compact = compact
         
         if isinstance(padding_width, int):
             self.padding_width = dict.fromkeys(self.data[0].keys(), padding_width)
@@ -223,6 +228,16 @@ class markdown_table:  # noqa: N801
         # Validate quote
         if not isinstance(self.quote, bool):
             raise ValueError(f"quote value of '{self.quote}' is not valid. Please use a boolean.")
+
+        # Validate compact
+        if not isinstance(self.compact, bool):
+            raise ValueError(f"compact value of '{self.compact}' is not valid. Please use a boolean.")
+        if self.compact and self.row_sep != "markdown":
+            raise ValueError(
+                "compact output requires row_sep 'markdown'. Without the separators a renderer "
+                "draws for you, an unpadded table is unreadable where the characters themselves "
+                "form the borders."
+            )
 
     def __validate_column_keys(self):
         """Per-column option dicts must cover exactly the table columns."""
@@ -367,6 +382,8 @@ class markdown_table:  # noqa: N801
         return padding
 
     def __get_row_sep_str(self):
+        if self.compact:
+            return "|" + "|".join("-" for _ in self.var_padding) + "|"
         row_sep_str = ""
         for value in self.var_padding.values():
             row_sep_str += "+" + "-" * value
@@ -405,6 +422,8 @@ class markdown_table:  # noqa: N801
         return self.__get_normal_row(item)
 
     def __get_normal_row(self, item):
+        if self.compact:
+            return "|" + "|".join(str(item[key]) for key in self.data[0].keys()) + "|"
         row = ""
         for key in self.data[0].keys():
             # preprend emoji pre-processing for cell values
@@ -456,7 +475,10 @@ class markdown_table:  # noqa: N801
 
         # Pad columns with fewer rows to ensure all columns have the same number of rows
         for key, value in multiline_items.items():
-            value.extend([self.padding_char * self.var_padding[key]] * (multiline_rows_max - len(value)))
+            # in compact mode an empty cell is an empty string, not a run of
+            # padding characters
+            filler = "" if self.compact else self.padding_char * self.var_padding[key]
+            value.extend([filler] * (multiline_rows_max - len(value)))
 
         rows = ""
         # Create the final output by combining rows from each column
@@ -481,6 +503,9 @@ class markdown_table:  # noqa: N801
             header += self.__get_multiline_row(inv_data)
             header += self.newline_char
         # else header is not rendered as multiple rows
+        elif self.compact:
+            # the header is just another row of values, without the padding
+            header += self.__get_normal_row({key: key for key in self.data[0].keys()}) + self.newline_char
         else:
             for key in self.data[0].keys():
                 margin = self.var_padding[key] - len(key)
