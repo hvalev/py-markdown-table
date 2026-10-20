@@ -35,6 +35,9 @@ jobs:
       - name: Test with ruff
         run: uv run ruff check .
 
+      - name: Test with mypy
+        run: uv run mypy
+
       - name: Test with pytest
         run: uv run pytest
 

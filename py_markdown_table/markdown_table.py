@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Class used to generate formatted markdown tables. See class description"""
 import math
-from typing import Optional, List, Dict, Union
+from typing import Any
 from py_markdown_table.utils import count_emojis, split_list_by_indices
 
 
@@ -19,11 +19,33 @@ class markdown_table:  # noqa: N801
         gets unescaped table content
     """
 
+    # Declared here rather than inferred from the constructor, because
+    # set_params reassigns all of them later on.
+    row_sep: str | None
+    padding_width: dict[str, int]
+    padding_weight: dict[str, str]
+    padding_char: str
+    newline_char: str
+    float_rounding: int | None
+    emoji_spacing: str | None
+    multiline: dict[str, int] | None
+    multiline_strategy: str
+    multiline_delimiter: str
+    quote: bool
+    compact: bool
+    skip_data_validation: bool
+    # derived by __update_meta_params, needed by every render entry point
+    var_padding: dict[str, int]
+    var_row_sep: str
+    var_row_sep_last: str
+    # every value rendered to a string, measured and wrapped from this copy
+    _cells: list[dict[str, str]]
+
     def __init__(
-        self, 
-        data: Union[List[Dict], Dict],
+        self,
+        data: list[dict[str, Any]],
         skip_data_validation: bool = False,
-    ):
+    ) -> None:
         """
         Initialize markdown_table with support for various rendering parameters.
 
@@ -72,19 +94,19 @@ class markdown_table:  # noqa: N801
 
     def set_params(
         self,
-        row_sep: str = "always",
-        padding_width: Union[int, Dict[str,int]] = 0,
-        padding_weight: Union[str, Dict[str,str]] = "centerleft",
+        row_sep: str | None = "always",
+        padding_width: int | dict[str, int] = 0,
+        padding_weight: str | dict[str, str] = "centerleft",
         padding_char: str = " ",
         newline_char: str = "\n",
-        float_rounding: Optional[int] = None,
-        emoji_spacing: Optional[str] = None,
-        multiline: Optional[Dict] = None,
+        float_rounding: int | None = None,
+        emoji_spacing: str | None = None,
+        multiline: dict[str, int] | None = None,
         multiline_strategy: str = "rows",
         multiline_delimiter: str = " ",
         quote: bool = True,
         compact: bool = False,
-    ):
+    ) -> "markdown_table":
         """
         Setter function for markdown table rendering parameters.
 
@@ -127,8 +149,18 @@ class markdown_table:  # noqa: N801
             self: Returns the instance with updated parameters.
         """
         self.row_sep = row_sep
-        self.padding_width = padding_width
-        self.padding_weight = padding_weight
+        # one value for the whole table is spread over every column, so the
+        # attribute only ever holds the per-column mapping
+        self.padding_width = (
+            dict.fromkeys(self.data[0].keys(), padding_width)
+            if isinstance(padding_width, int)
+            else padding_width
+        )
+        self.padding_weight = (
+            dict.fromkeys(self.data[0].keys(), padding_weight)
+            if isinstance(padding_weight, str)
+            else padding_weight
+        )
         self.padding_char = padding_char
         self.newline_char = newline_char
         self.float_rounding = float_rounding
@@ -138,11 +170,6 @@ class markdown_table:  # noqa: N801
         self.multiline_delimiter = multiline_delimiter
         self.quote = quote
         self.compact = compact
-        
-        if isinstance(padding_width, int):
-            self.padding_width = dict.fromkeys(self.data[0].keys(), padding_width)
-        if isinstance(padding_weight, str):
-            self.padding_weight = dict.fromkeys(self.data[0].keys(), padding_weight)
 
         
         self.__validate_parameters()
@@ -160,7 +187,7 @@ class markdown_table:  # noqa: N801
 
         return self
 
-    def __update_meta_params(self):
+    def __update_meta_params(self) -> None:
         """Update and store internal meta-parameters"""
         if self.multiline:
             # copy, and add padding exactly once: assigning self.multiline here
@@ -173,8 +200,8 @@ class markdown_table:  # noqa: N801
         # self.var_row_sep_last = self.__get_row_sep_last()
         self.var_row_sep_last = self.__get_row_sep_str()
 
-    def __validate_parameters(self): # noqa: C901
-        valid_values = {
+    def __validate_parameters(self) -> None:  # noqa: C901
+        valid_values: dict[str, list[Any]] = {
             "row_sep": ["always", "topbottom", "markdown", None],
             "emoji_spacing": ["mono", None],
             "multiline_strategy": ["rows", "header", "rows_and_header"]
@@ -191,17 +218,17 @@ class markdown_table:  # noqa: N801
 
         # Validate padding_weight
         if isinstance(self.padding_weight, dict):
-            for key, value in self.padding_weight.items():
-                if value not in valid_dict_values["padding_weight"]:
-                    raise ValueError(f"padding_weight[{key}] value of '{value}' is not valid. Possible values are {valid_dict_values['padding_weight']}.")
+            for column, weight in self.padding_weight.items():
+                if weight not in valid_dict_values["padding_weight"]:
+                    raise ValueError(f"padding_weight[{column}] value of '{weight}' is not valid. Possible values are {valid_dict_values['padding_weight']}.")
         else:
             raise ValueError(f"padding_weight value of '{self.padding_weight}' is not valid.")
 
         # Validate padding_width
         if isinstance(self.padding_width, dict):
-            for key, value in self.padding_width.items():
-                if not isinstance(value, int) or not (0 <= value < 100000):
-                    raise ValueError(f"padding_width[{key}] value of '{value}' is not valid. Possible range is 0 <= value < 100000.")
+            for column, width in self.padding_width.items():
+                if not isinstance(width, int) or not (0 <= width < 100000):
+                    raise ValueError(f"padding_width[{column}] value of '{width}' is not valid. Possible range is 0 <= width < 100000.")
         else:
             raise ValueError(f"padding_width value of '{self.padding_width}' is not valid.")
 
@@ -239,7 +266,7 @@ class markdown_table:  # noqa: N801
                 "form the borders."
             )
 
-    def __validate_column_keys(self):
+    def __validate_column_keys(self) -> None:
         """Per-column option dicts must cover exactly the table columns."""
         columns = set(self.data[0].keys())
         for name in ("padding_width", "padding_weight", "multiline"):
@@ -253,7 +280,7 @@ class markdown_table:  # noqa: N801
             if missing:
                 raise ValueError(f"{name} has no value for column(s): {missing}. The columns are {sorted(columns, key=str)}.")
 
-    def __prepare_cells(self):
+    def __prepare_cells(self) -> None:
         """Render every value to a string once, before any measuring.
 
         Downstream code splits cells, scans them for emojis and takes their
@@ -274,7 +301,7 @@ class markdown_table:  # noqa: N801
                 cell[key] = text
             self._cells.append(cell)
 
-    def __reject_line_breaks(self):
+    def __reject_line_breaks(self) -> None:
         """Without column widths there is no way to render a line break.
 
         The row simply continues on the next output line, which leaves the
@@ -289,7 +316,7 @@ class markdown_table:  # noqa: N801
                         f"or replace the line break in the data."
                     )
 
-    def __validate_data(self, data):
+    def __validate_data(self, data: list[dict[str, Any]]) -> None:
         # Check if all dictionaries in self.data have uniform keys
         keys = set(data[0].keys())
         for item in data:
@@ -298,7 +325,7 @@ class markdown_table:  # noqa: N801
             if set(item.keys()) != keys:
                 raise ValueError("Dictionary keys are not uniform across data variable.")
 
-    def __validate_multiline(self):
+    def __validate_multiline(self) -> None:
         for i, row in enumerate(self._cells):
             for key in row.keys():
                 if key not in self.var_padding:
@@ -327,7 +354,7 @@ class markdown_table:  # noqa: N801
                                     f"for column '{key}' and padding_width '{self.padding_width[key]}'."
                                 )
 
-    def __display_width(self, value):
+    def __display_width(self, value: str) -> int:
         """Columns a value occupies when drawn.
 
         One column per character, except in mono emoji mode, where each emoji
@@ -337,11 +364,11 @@ class markdown_table:  # noqa: N801
             return len(value) + len(count_emojis(value))
         return len(value)
 
-    def __content_width(self, key):
+    def __content_width(self, key: str) -> int:
         """Room left for content once the column padding is taken off."""
         return self.var_padding[key] - self.padding_width[key]
 
-    def __line_pieces(self, line):
+    def __line_pieces(self, line: str) -> list[tuple[str, str]]:
         """Pieces a rendered line may be cut between, and what joins each one.
 
         Words come from `multiline_delimiter`. An emoji is a break opportunity
@@ -364,14 +391,14 @@ class markdown_table:  # noqa: N801
         return pieces
 
     @staticmethod
-    def __join_pieces(pieces):
+    def __join_pieces(pieces: list[tuple[str, str]]) -> str:
         """Put pieces back into one line; the first one keeps no separator."""
         line = ""
         for position, (text, gap) in enumerate(pieces):
             line += text if position == 0 else gap + text
         return line
 
-    def __get_padding(self):
+    def __get_padding(self) -> dict[str, int]:
         """Calculate table-wide padding from the prepared cells."""
         padding = {key: len(key) for key in self.data[0].keys()}
         for row in self._cells:
@@ -381,7 +408,7 @@ class markdown_table:  # noqa: N801
                     padding[key] = width + self.padding_width[key]
         return padding
 
-    def __get_row_sep_str(self):
+    def __get_row_sep_str(self) -> str:
         if self.compact:
             return "|" + "|".join("-" for _ in self.var_padding) + "|"
         row_sep_str = ""
@@ -390,7 +417,7 @@ class markdown_table:  # noqa: N801
         row_sep_str += "+"
         return row_sep_str
 
-    def __get_margin(self, margin, key):
+    def __get_margin(self, margin: int, key: str) -> int:
         # get column-specific alignment based on the column key (header)
         if self.padding_weight[key] == "left":
             right = 0
@@ -404,7 +431,7 @@ class markdown_table:  # noqa: N801
             right = math.floor(margin / 2)
         return right
 
-    def __get_row(self, item):
+    def __get_row(self, item: dict[str, str]) -> str:
         # checking if multiline variable for rows is set
         if self.multiline and self.multiline_strategy in ["rows", "rows_and_header"]:
             # local check if row needs to be split in multiple lines
@@ -421,7 +448,7 @@ class markdown_table:  # noqa: N801
         # if multiline is not set it's not multiline and return regular row
         return self.__get_normal_row(item)
 
-    def __get_normal_row(self, item):
+    def __get_normal_row(self, item: dict[str, str]) -> str:
         if self.compact:
             return "|" + "|".join(str(item[key]) for key in self.data[0].keys()) + "|"
         row = ""
@@ -441,7 +468,7 @@ class markdown_table:  # noqa: N801
         row += "|"
         return row
 
-    def __get_multiline_row(self, item): # noqa: C901
+    def __get_multiline_row(self, item: dict[str, str]) -> str:  # noqa: C901
         multiline_items = {}
 
         # Process each column in the row
@@ -453,7 +480,7 @@ class markdown_table:  # noqa: N801
                 # measure the line that would actually be printed, in the
                 # unit the terminal draws it, against the room left for content
                 remaining = self.__line_pieces(line)
-                single_row = []
+                single_row: list[tuple[str, str]] = []
                 while remaining:
                     candidate = single_row + [remaining[0]]
                     # a piece too wide for a line of its own still gets one,
@@ -490,7 +517,7 @@ class markdown_table:  # noqa: N801
         return rows
 
 
-    def get_header(self):
+    def get_header(self) -> str:
         """Get the header of the markdown table"""
         header = ""
         if self.row_sep in ["topbottom", "always"]:
@@ -521,7 +548,7 @@ class markdown_table:  # noqa: N801
             header += self.var_row_sep.replace("+", "|") + self.newline_char
         return header
 
-    def get_body(self):
+    def get_body(self) -> str:
         """Get the body of the markdown table"""
         rows = ""
         for i, item in enumerate(self._cells):
@@ -534,7 +561,7 @@ class markdown_table:  # noqa: N801
                 rows += self.newline_char + self.var_row_sep_last
         return rows
 
-    def get_markdown(self):
+    def get_markdown(self) -> str:
         """Get the complete markdown table"""
         self.__update_meta_params()
         if not self.multiline:
