@@ -126,7 +126,9 @@ for params in parameter_combinations:
     )
 
 print(results)
-res = find_longest_contiguous_strings(results, delimiter="~")
+# include_header: a column also has to be wide enough for its own name,
+# otherwise the header is written past the border
+res = find_longest_contiguous_strings(results, delimiter="~", include_header=True)
 benchmark = (
     markdown_table(results)
     .set_params(
