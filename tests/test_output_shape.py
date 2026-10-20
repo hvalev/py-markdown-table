@@ -101,3 +101,12 @@ def test_every_value_of_the_data_appears(row_sep):
     for row in DATA:
         for value in row.values():
             assert str(value) in out
+
+
+@pytest.mark.parametrize("emoji_spacing", [None, "mono"], ids=["off", "mono"])
+def test_wide_script_is_rectangular(emoji_spacing):
+    """CJK and emoji are both two columns wide, so the same rule has to hold
+    for text that is not Latin."""
+    data = [{"cjk": "日本語のテキスト", "mix": "ok \U0001f600 emoji", "n": 1}, {"cjk": "한글", "mix": "plain", "n": 22}]
+    out = markdown_table(data).set_params(emoji_spacing=emoji_spacing).get_markdown()
+    _assert_rectangular(out, mono=emoji_spacing == "mono")
