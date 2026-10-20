@@ -1,11 +1,11 @@
 """Util functions which may be used outside of the class for convenience"""
 import unicodedata
-from typing import List, Dict
+from typing import Any, Sequence, TypeVar, overload
 
 _EMOJI_PRESENTATION = "\ufe0f"
 
 
-def count_emojis(text: str) -> List[Dict]:
+def count_emojis(text: str) -> list[dict[str, Any]]:
     """Report the characters in a string that a monospace font draws two columns wide.
 
     That covers emoji in emoji presentation and any other East Asian Wide
@@ -39,8 +39,8 @@ def _is_double_width(text: str, index: int) -> bool:
 
 
 def find_longest_contiguous_strings(
-    data: List[Dict], include_header: bool = False, delimiter: str = " "
-) -> Dict:
+    data: list[dict[str, Any]], include_header: bool = False, delimiter: str = " "
+) -> dict[str, int]:
     """Finds the longest contiguous strings in a list of dicts.
 
     Args:
@@ -74,21 +74,36 @@ def find_longest_contiguous_strings(
     return longest_strings
 
 
-def split_list_by_indices(lst: List, indices: List) -> List:
-    """Used to split emojis into separate elements for the multirow rendering
+T = TypeVar("T")
+
+
+@overload
+def split_list_by_indices(sequence: str, indices: Sequence[int]) -> list[str]: ...
+
+
+@overload
+def split_list_by_indices(sequence: list[T], indices: Sequence[int]) -> list[T]: ...
+
+
+def split_list_by_indices(sequence: Sequence[Any], indices: Sequence[int]) -> list[Any]:
+    """Split a sequence at the given positions, keeping them.
+
+    Called with a string and the offsets of its wide characters, so that the
+    text between them comes back as separate pieces. An index of 0 yields an
+    empty leading piece.
 
     Args:
-        lst (List): Input list which needs to be split
-        indices (List): List of indices to split by
+        sequence: the sequence to split.
+        indices: positions to cut at, ascending.
 
     Returns:
-        List: List split by indices
+        The pieces, one more than the number of indices.
     """
 
     split_list = []
     start = 0
     for index in indices:
-        split_list.append(lst[start:index])
+        split_list.append(sequence[start:index])
         start = index
-    split_list.append(lst[start:])
+    split_list.append(sequence[start:])
     return split_list
