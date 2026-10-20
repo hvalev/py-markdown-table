@@ -426,7 +426,7 @@ markdown_table(data).set_params(padding_width = 0, padding_weight = "centerleft"
     </summary>
 
 ```
-+------------------------------------------------+
++-------------------------+------------+---------+
 |            A            |      B     |    C    |
 +-------------------------+------------+---------+
 |  row1_A and additional  |   row1_B   |  row1_C |
@@ -437,14 +437,14 @@ markdown_table(data).set_params(padding_width = 0, padding_weight = "centerleft"
 |                         |    stuff   |         |
 +-------------------------+------------+---------+
 |          row3_A         |   row3_B   |  row3_C |
-+------------------------------------------------+
++-------------------------+------------+---------+
 ```
 </details>
 <br/>
 
 
 ```python
-markdown_table(data).set_params(padding_width = 2, padding_weight = "centerleft", multiline = {"A": 25, "B": 12, "C": 9}).get_markdown())
+markdown_table(data).set_params(padding_width = 2, padding_weight = "centerleft", multiline = {"A": 25, "B": 12, "C": 9}).get_markdown()
 ```
 <details>
     <summary >
@@ -452,17 +452,18 @@ markdown_table(data).set_params(padding_width = 2, padding_weight = "centerleft"
     </summary>
 
 ```
-+------------------------------------------------------------+
-|              A              |        B       |      C      |
-+-----------------------------+----------------+-------------+
-| row1_A and additional stuff |     row1_B     |    row1_C   |
-+-----------------------------+----------------+-------------+
-|            row2_A           |   row2_B and   |    row2_C   |
-|                             |   additional   |             |
-|                             |      stuff     |             |
-+-----------------------------+----------------+-------------+
-|            row3_A           |     row3_B     |    row3_C   |
-+------------------------------------------------------------+
++---------------------------+--------------+-----------+
+|             A             |       B      |     C     |
++---------------------------+--------------+-----------+
+|   row1_A and additional   |    row1_B    |   row1_C  |
+|           stuff           |              |           |
++---------------------------+--------------+-----------+
+|           row2_A          |  row2_B and  |   row2_C  |
+|                           |  additional  |           |
+|                           |     stuff    |           |
++---------------------------+--------------+-----------+
+|           row3_A          |    row3_B    |   row3_C  |
++---------------------------+--------------+-----------+
 ```
 </details>
 <br/>
@@ -477,21 +478,26 @@ markdown_table(data).set_params(row_sep = "always", multiline = {"those are mult
     </summary>
 
 ```
-+-----+
-|those|
-| are |
-|multi|
-| rows|
-+-----+
-| yes |
-| they|
-| are |
-+-----+
-|  no |
-| they|
-| are |
-| not |
-+-----+
++-------+-----------+-----+-----+
+| title |    time   | date|seats|
+|that is|           |     |     |
+| maybe |           |     |     |
+|  too  |           |     |     |
+|  long |           |     |     |
+|  Vrij |21:30-23:00|  😊 |24/24|
+|Zwemmen|           |     |     |
+|  Vrij |12:00-13:00| Thu |18/18|
+|Zwemmen|           |10.12|     |
+|  Vrij | 7:30-8:30 | Fri | 😊🌍|
+|Zwemmen|           |11.12|  🎉 |
+|  Vrij |13:15-14:15| Sat |20/20|
+|Zwemmen|           |12.12|     |
+|  Vrij | 7:30-8:30 | Fri | asd |
+|Zwemmen|           |11.12| 😊- |
+|       |           |     |🌍:🎉|
+|Zwemmen|13:15-14:15| Sat |20/20|
+|       |           |12.12|     |
++-------+-----------+-----+-----+
 ```
 </details>
 <br/>
