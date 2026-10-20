@@ -680,3 +680,7 @@ The table below provide some benchmark results, evaluating the performance on da
 +----------------+-----------+---------------+
 ```
 </details>
+
+## Changelog
+
+The versions since 2.0.0 and what each one changed are in [CHANGELOG.md](CHANGELOG.md).
