@@ -62,3 +62,10 @@ def test_a_word_that_cannot_fit_is_reported_not_hung_on():
     loop reconsidering the same piece forever."""
     with pytest.raises(ValueError, match="longer than the allocated column width"):
         markdown_table([{"col": "ab cdefghijkl"}]).set_params(multiline={"col": 3})
+
+
+def test_a_column_name_wider_than_its_column_is_reported():
+    """With the default strategy the header is not wrapped, so a name that is
+    too long for its column used to be rendered past the table border."""
+    with pytest.raises(ValueError, match="column name 'longheader'"):
+        markdown_table([{"longheader": "ab"}]).set_params(multiline={"longheader": 3})

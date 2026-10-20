@@ -269,9 +269,18 @@ class markdown_table:  # noqa: N801
             for key in row.keys():
                 if key not in self.var_padding:
                     raise KeyError(f"Key '{key}' not found in var_padding.")
-                # a header rendered through the wrapping code has to fit too
-                values = [key] if self.multiline_strategy in ["header", "rows_and_header"] else []
-                values += [row[key]]
+                # the header goes through the same wrapping code only when the
+                # strategy renders it, so otherwise it has to fit whole
+                if self.multiline_strategy in ["header", "rows_and_header"]:
+                    values = [key, row[key]]
+                else:
+                    values = [row[key]]
+                    if self.__display_width(key) > self.var_padding[key]:
+                        raise ValueError(
+                            f"The column name '{key}' is wider than the column width "
+                            f"allocated for it and cannot be wrapped by the "
+                            f"multiline_strategy '{self.multiline_strategy}'."
+                        )
                 for value in values:
                     for line in value.split("\n"):
                         for piece, _ in self.__line_pieces(line):
