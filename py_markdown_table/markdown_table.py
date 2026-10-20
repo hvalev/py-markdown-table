@@ -267,31 +267,82 @@ class markdown_table:  # noqa: N801
     def __validate_multiline(self):
         for i, row in enumerate(self._cells):
             for key in row.keys():
-                if key in self.var_padding:
-                    multiline_data = row[key].split(self.multiline_delimiter)
-                    multiline_max_string = max(multiline_data, key=len)
-                    multiline_max_width = len(multiline_max_string)
-                    if multiline_max_width + self.padding_width[key] > self.var_padding[key]:
-                        raise ValueError(
-                            f"There is a contiguous string:\n"
-                            f"'{multiline_max_string}'\n"
-                            f"in the element [{i}] "
-                            f"which is longer than the allocated column width "
-                            f"for column '{key}' and padding_width '{self.padding_width[key]}'."
-                        )
-                else:
+                if key not in self.var_padding:
                     raise KeyError(f"Key '{key}' not found in var_padding.")
+                # the header goes through the same wrapping code only when the
+                # strategy renders it, so otherwise it has to fit whole
+                if self.multiline_strategy in ["header", "rows_and_header"]:
+                    values = [key, row[key]]
+                else:
+                    values = [row[key]]
+                    if self.__display_width(key) > self.var_padding[key]:
+                        raise ValueError(
+                            f"The column name '{key}' is wider than the column width "
+                            f"allocated for it and cannot be wrapped by the "
+                            f"multiline_strategy '{self.multiline_strategy}'."
+                        )
+                for value in values:
+                    for line in value.split("\n"):
+                        for piece, _ in self.__line_pieces(line):
+                            if self.__display_width(piece) > self.__content_width(key):
+                                raise ValueError(
+                                    f"There is a contiguous string:\n"
+                                    f"'{piece}'\n"
+                                    f"in the element [{i}] "
+                                    f"which is longer than the allocated column width "
+                                    f"for column '{key}' and padding_width '{self.padding_width[key]}'."
+                                )
+
+    def __display_width(self, value):
+        """Columns a value occupies when drawn.
+
+        One column per character, except in mono emoji mode, where each emoji
+        is drawn roughly twice as wide as the single code point it is made of.
+        """
+        if self.emoji_spacing == "mono":
+            return len(value) + len(count_emojis(value))
+        return len(value)
+
+    def __content_width(self, key):
+        """Room left for content once the column padding is taken off."""
+        return self.var_padding[key] - self.padding_width[key]
+
+    def __line_pieces(self, line):
+        """Pieces a rendered line may be cut between, and what joins each one.
+
+        Words come from `multiline_delimiter`. An emoji is a break opportunity
+        on both sides, which is what lets a run of emoji wrap instead of
+        overflowing the column. Pieces cut out of the same word join with
+        nothing, so re-assembling a line reproduces the value character for
+        character - the joining used to use the delimiter here, which turned
+        `a\U0001f600b` into `a \U0001f600 b`.
+        """
+        pieces = []
+        for position, word in enumerate(line.split(self.multiline_delimiter)):
+            parts = [word]
+            if self.emoji_spacing == "mono":
+                indices = [emoji["index"] for emoji in count_emojis(word)]
+                if indices:
+                    parts = split_list_by_indices(word, indices)
+            for part_index, part in enumerate(parts):
+                gap = self.multiline_delimiter if not part_index and position else ""
+                pieces.append((part, gap))
+        return pieces
+
+    @staticmethod
+    def __join_pieces(pieces):
+        """Put pieces back into one line; the first one keeps no separator."""
+        line = ""
+        for position, (text, gap) in enumerate(pieces):
+            line += text if position == 0 else gap + text
+        return line
 
     def __get_padding(self):
         """Calculate table-wide padding from the prepared cells."""
         padding = {key: len(key) for key in self.data[0].keys()}
         for row in self._cells:
             for key, value in row.items():
-                # a monospace emoji occupies roughly twice the width of the
-                # single code point it is made of, so budget one extra column
-                width = len(value)
-                if self.emoji_spacing == "mono":
-                    width += len(count_emojis(value))
+                width = self.__display_width(value)
                 if padding[key] < width + self.padding_width[key]:
                     padding[key] = width + self.padding_width[key]
         return padding
@@ -323,7 +374,7 @@ class markdown_table:  # noqa: N801
             # local check if row needs to be split in multiple lines
             multiline = False
             for key in self.data[0].keys():
-                if len(item[key]) > self.var_padding[key]:
+                if self.__display_width(item[key]) > self.__content_width(key):
                     multiline = True
                 if "\n" in item[key]:
                     multiline = True
@@ -355,45 +406,30 @@ class markdown_table:  # noqa: N801
     def __get_multiline_row(self, item): # noqa: C901
         multiline_items = {}
 
-        # Helper function to process each element and split by emojis if present
-        def split_and_process_element(element):
-            emojis = count_emojis(element)
-            if not emojis:
-                return [element]
-            emoji_indices = [emoji["index"] for emoji in emojis if "index" in emoji]
-            return split_list_by_indices(element, emoji_indices)
-
         # Process each column in the row
         for key in self.data[0].keys():
             multiline_row = []
             # First we split by embedded line breaks in order to correctly
             # render lists and othe markdown elements which depend on newline offset
             for line in item[key].split("\n"):
-                fully_split_cell = []
-                # Split cell content by the delimiter and process each part
-                for element in line.split(self.multiline_delimiter):
-                    fully_split_cell.extend(split_and_process_element(element))
-
+                # measure the line that would actually be printed, in the
+                # unit the terminal draws it, against the room left for content
+                remaining = self.__line_pieces(line)
                 single_row = []
-                item_prev_length, spacing_between_items = 0, 0
-
-                # Create multiline rows from the split elements
-                while fully_split_cell:
-                    current_element = fully_split_cell[0]
-                    item_length = len(current_element) + len(count_emojis(current_element))
-
-                    # Check if the current element fits in the row
-                    if item_length + item_prev_length + spacing_between_items + self.padding_width[key] <= self.var_padding[key]:
-                        item_prev_length += item_length
-                        single_row.append(fully_split_cell.pop(0))
-                        spacing_between_items = len(single_row)
+                while remaining:
+                    candidate = single_row + [remaining[0]]
+                    # a piece too wide for a line of its own still gets one,
+                    # rather than being reconsidered forever
+                    if len(candidate) == 1 or self.__display_width(
+                        self.__join_pieces(candidate)
+                    ) <= self.__content_width(key):
+                        single_row = candidate
+                        remaining.pop(0)
                     else:
-                        # Start a new line if the current element doesn't fit
-                        multiline_row.append(" ".join(single_row))
-                        single_row, item_prev_length, spacing_between_items = [], 0, 0
-
-                # Add the remaining elements in single_row to multiline_row
-                multiline_row.append(" ".join(single_row))
+                        multiline_row.append(self.__join_pieces(single_row))
+                        single_row = []
+                if single_row:
+                    multiline_row.append(self.__join_pieces(single_row))
             multiline_items[key] = multiline_row
 
         # Find the maximum number of rows in any column
