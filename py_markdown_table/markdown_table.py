@@ -205,8 +205,12 @@ class markdown_table:  # noqa: N801
             raise ValueError(f"padding_char value of '{self.padding_char}' is not valid. Please use a single character string.")
 
         # Validate float_rounding
-        if not isinstance(self.float_rounding, (type(None), int)):
-            raise ValueError(f"float_rounding value of '{self.float_rounding}' is not valid. Please use an integer or leave as None.")
+        if not isinstance(self.float_rounding, (type(None), int)) or (
+            isinstance(self.float_rounding, int) and self.float_rounding < 0
+        ):
+            raise ValueError(
+                f"float_rounding value of '{self.float_rounding}' is not valid. Please use an integer >= 0 or leave as None."
+            )
 
         # Validate multiline
         if not isinstance(self.multiline, (type(None), dict)):
