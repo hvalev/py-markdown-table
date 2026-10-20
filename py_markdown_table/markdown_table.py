@@ -116,8 +116,8 @@ class markdown_table:  # noqa: N801
             `topbottom`: Separate the top (header) and bottom (last row) of the table.
             `markdown`: Separate only the header from the body.
             `None`: No row separators will be inserted. Defaults to "always". \n
-        `padding_width` (Union[int, Dict[str, int]], optional): Width of padding to allocate to all table cells. Defaults to `0`. Padding can also be assigned on a per-column level by passing the values as key-value pairs where the keys mirror the ones of the input data and values describe the padding for the specific column.\n
-        `padding_weight` (Union[str, Dict[str, str]], optional): Strategy for allocating padding within table cells. Padding weight can be assigned globally for the whole table as a string or per-column by passing the values as key-value pairs where the keys mirror the ones of the input data and values describe the padding weight for the specific column. Possible values are:
+        `padding_width` (int | dict[str, int], optional): Extra columns a column gets on top of its widest cell. This is one pool of slack per column, not one per side - `padding_weight` decides how the pool is split between the left and the right. Defaults to `0`. Padding can also be assigned per column by passing key-value pairs whose keys are exactly the columns of the input data.\n
+        `padding_weight` (str | dict[str, str], optional): How the `padding_width` of a column is distributed between its left and its right side. Can be assigned globally for the whole table as a string or per-column by passing key-value pairs whose keys are exactly the columns of the input data. Possible values are:
             `left`: Aligns the cell's contents to the end of the cell.
             `right`: Aligns the cell's contents to the beginning of the cell.
             `centerleft`: Centers cell's contents with extra padding allocated to the beginning of the cell.
@@ -125,20 +125,22 @@ class markdown_table:  # noqa: N801
             Defaults to `centerleft`. \n
         `padding_char` (str, optional): Single character used to fill padding. Default is a blank space ` `. \n
         `newline_char` (str, optional): Character appended to each row to force a newline. Default is `\\n`. \n
-        `float_rounding` (int, optional): Integer denoting the precision of cells with `float` values after the decimal point. 
+        `float_rounding` (int, optional): Number of digits to keep after the decimal point of `float` cells, rounding them to that precision. Must be 0 or greater; `None` leaves floats untouched. 
             Default is `None`. \n
-        `emoji_spacing` (str, optional): Strategy for rendering emojis in tables. 
-            `mono` will emojis as single characters, suitable for monospaced fonts.
-            `None` will not detect and process emojis. 
+        `emoji_spacing` (str, optional): Strategy for rendering characters that a monospace font draws two columns wide.
+            `mono` budgets two columns for each of them, so a column of emoji or CJK ends up the width it occupies on screen. Which characters those are comes from `unicodedata.east_asian_width`.
+            `None` treats every character as one column wide. 
             Default is `None`. \n
-        `multiline` (Dict[str, int], optional): Renders the table with predefined widths by passing a dictionary with column names as keys and their respective widths as values. Note that the width of a column cannot be smaller than the longest contiguous string present in the data.
+        `multiline` (dict[str, int], optional): Wrap columns to the given widths, as a dictionary with a width per column. The width is the space left for content, so `padding_width` is added on top of it rather than taken from it. Values must be provided for every column.
+            A word that does not fit the width is refused rather than allowed to overrun the column, and a run of wide characters may be broken between characters.
+            Line breaks inside a value are rendered as extra lines only in this mode; without it they are refused, because they would split a row across two output lines.
             Default is `None`. \n
         `multiline_strategy` (str, optional): Strategy applied to rendering contents in multiple lines. Possible values are:
             `rows`: Splits only rows overfilling the predefined column width.
             `header`: Splits only the header overfilling the predefined column width.
             `rows_and_header`: Splits rows and header overfilling the predefined column width.
             Default is `rows`. \n
-        `multiline_delimiter` (str, optional): Character that will be used to split a cell's contents into multiple rows.
+        `multiline_delimiter` (str, optional): Character a cell's contents are split on to find places to wrap, and put back between the parts that end up on one line.
             Default is a blank space ` `. \n
         `quote` (bool, optional): Wraps the generated markdown table in block quotes ` ```table``` `. 
             Default is `True`. 
