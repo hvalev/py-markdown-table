@@ -252,8 +252,27 @@ class markdown_table:  # noqa: N801
             for key, value in row.items():
                 if self.float_rounding and isinstance(value, float):
                     value = round(value, self.float_rounding)
-                cell[key] = str(value)
+                # a line break is a line break whichever platform produced it;
+                # left alone, a bare carriage return is one column wide here
+                # and something else entirely in the renderer
+                text = str(value).replace("\r\n", "\n").replace("\r", "\n")
+                cell[key] = text
             self._cells.append(cell)
+
+    def __reject_line_breaks(self):
+        """Without column widths there is no way to render a line break.
+
+        The row simply continues on the next output line, which leaves the
+        table ragged and, in markdown mode, is no longer a table at all.
+        """
+        for i, row in enumerate(self._cells):
+            for key, value in row.items():
+                if "\n" in value:
+                    raise ValueError(
+                        f"The value in the element [{i}] under column '{key}' contains a line "
+                        f"break. Either give that column a `multiline` width so it can be wrapped, "
+                        f"or replace the line break in the data."
+                    )
 
     def __validate_data(self, data):
         # Check if all dictionaries in self.data have uniform keys
@@ -493,6 +512,8 @@ class markdown_table:  # noqa: N801
     def get_markdown(self):
         """Get the complete markdown table"""
         self.__update_meta_params()
+        if not self.multiline:
+            self.__reject_line_breaks()
         data = self.get_header() + self.get_body()
         if self.quote:
             return "```" + data + "```"
